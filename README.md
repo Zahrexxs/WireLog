@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20Native)-blueviolet)](#architecture--fixed-stack)
 
-[Overview](#-overview) • [Key Features](#-key-features) • [Sheet Contract](#-sheet-contract) • [Local Preview](#-local-development--preview) • [Deployment](#-deployment-guide-with-clasp) • [Rollback Runbook](#-rollback-runbook)
+[Overview](#-overview) • [Repository Details](#-repository-details) • [Key Features](#-key-features) • [Sheet Contract](#-sheet-contract) • [Local Preview](#-local-development--preview) • [Deployment](#-deployment-guide-with-clasp) • [Rollback Runbook](#-rollback-runbook)
 
 ---
 
@@ -30,6 +30,42 @@ flowchart LR
     B -->|"LockService (30s)\n+ Formula Guard"| C[("📊 Google Spreadsheet\n(14-column Task Log)")]
     C -->|"Data Validation Lists\n+ Median Durations"| B
     B -->|"Hydrate Config & Presets"| A
+```
+
+---
+
+## 📦 Repository Details
+
+| Specification | Detail |
+| :--- | :--- |
+| **Repository URL** | [`https://github.com/Zahrexxs/daily-task-logger`](https://github.com/Zahrexxs/daily-task-logger) |
+| **Owner / Maintainer** | **[@Zahrexxs](https://github.com/Zahrexxs)** |
+| **Default Branch** | `main` |
+| **Repository Visibility** | `Private` |
+| **Runtime & Engines** | Google Apps Script (V8 Engine) • Node.js (v18+) for testing |
+| **Frontend Framework** | Plain Vanilla HTML5, Modern CSS3, ES6 Modules (Zero dependencies) |
+| **Production Bundle** | **17.68 KB** gzipped standalone bundle (`client/index.html`) |
+| **Test Coverage** | 21/21 Unit Tests passing (`node tests/unitTests.js`) |
+| **License** | [MIT License](LICENSE) |
+
+### 🚀 Quick Clone Commands
+
+Choose your preferred git protocol:
+
+```bash
+# Via HTTPS
+git clone https://github.com/Zahrexxs/daily-task-logger.git
+
+# Via SSH
+git clone git@github.com:Zahrexxs/daily-task-logger.git
+
+# Via GitHub CLI
+gh repo clone Zahrexxs/daily-task-logger
+```
+
+Navigate into the directory and launch the local test server in one command:
+```bash
+cd daily-task-logger && npm run serve
 ```
 
 ---
