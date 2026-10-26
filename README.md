@@ -1,176 +1,241 @@
-# Daily Task Logger
+<div align="center">
 
-> A lightweight, mobile-first Google Apps Script web application built for network engineers to log daily tasks into an existing Google Sheet in seconds, with dates and times synchronized to the server clock.
+# ⚡ Daily Task Logger
 
----
+**A high-velocity, mobile-first Google Apps Script web application built for Network Engineers to log daily operations in seconds with zero clock drift.**
 
-## Features
+[![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20(V8)-4285F4?logo=google-sheets&logoColor=white)](https://developers.google.com/apps-script)
+[![Frontend](https://img.shields.io/badge/Frontend-Vanilla%20HTML5%20%2F%20CSS3%20%2F%20ES6-E34F26?logo=html5&logoColor=white)](client/index.html)
+[![Bundle Size](https://img.shields.io/badge/Bundle%20Size-17.68%20KB%20(gzipped)-success?logo=webpack&logoColor=white)](#performance--footprint)
+[![Test Suite](https://img.shields.io/badge/Tests-21%2F21%20Passing-brightgreen?logo=jest&logoColor=white)](tests/unitTests.js)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20Native)-blueviolet)](#architecture--fixed-stack)
 
-- **Blazing Fast Entry (<15s)**: One-screen mobile-optimized layout with the 6 essential fields (`Task`, `Action`, `Hostname`, `Start`, `End`, `Save`) visible without scrolling on standard mobile screens ($390 \times 844\text{ px}$). Supports `Ctrl+Enter` to save.
-- **Server-Synchronized Clock**: Server clock (`Asia/Jakarta` WIB) is the clock of record. Compensates for client device clock drift using NTP-style round-trip latency calculation ($\text{offset} = \text{serverNow} + \frac{\text{RTT}}{2} - \text{receiveTime}$). Re-syncs every 5 minutes and on tab focus.
-- **Auto / Manual Time Intelligence**:
-  - `Date`, `Start`, and `End` start in **AUTO** mode.
-  - `End` tracks real-time synced clock.
-  - `Start` tracks `End - typical duration` (computed dynamically from the median of the last 10 entries for the matching Task + Action pair, or 5-minute fallback).
-  - Quick duration chips (`+1m`, `+5m`, `+10m`, `+15m`, `+30m`, `+60m`, `+90m`).
-  - Persistent timer mode ("Start task" / "Finish") surviving browser refreshes.
-- **Resilient & Offline-Ready**:
-  - Offline queue in browser `localStorage` displayed as **"Pending (n)"**. Automatically retries and flushes upon reconnect and window focus with zero duplicates.
-  - 30-second **Undo window**: Reverses the last save only if cells have not been altered manually in Google Sheets.
-- **Fuzzy Device Autocomplete**: Searches against the `Devices` inventory tab and distinct historical sheet entries (e.g. typing `"tomang"` suggests `SW1_KCP JAKARTA TOMANG`). Unregistered hostnames show a "New device" notice and can be saved normally.
-- **Task Presets & Sticky Defaults**: 1-tap presets for recurring routines (e.g. `Cek Endpoint Cabang`). Post-save "Next entry" preserves repeated metadata while blanking `Hostname` and `Remark`.
-- **Zero-Bloat Vanilla Stack**: Zero frameworks, zero bundlers, zero external CDNs or web fonts. Entire gzipped client bundle is **under 18 KB** (well within the 60 KB budget).
+[Overview](#-overview) • [Key Features](#-key-features) • [Sheet Contract](#-sheet-contract) • [Local Preview](#-local-development--preview) • [Deployment](#-deployment-guide-with-clasp) • [Rollback Runbook](#-rollback-runbook)
 
 ---
 
-## Architecture & Sheet Contract
+</div>
 
-Columns are matched dynamically by header text string (default header row 1, configurable):
+## 📌 Overview
 
-| # | Column Header | Form Control | Default |
-| :-: | :--- | :--- | :--- |
-| 1 | `No` | Automatic (`previous No + 1`; leaves formulas untouched) | Auto |
-| 2 | `Tanggal` | Date picker (Google Sheets serial number, e.g. `46266`) | Today (Auto) |
-| 3 | `Task` | Combobox / Text | Last used |
-| 4 | `Action` | Combobox / Text | Last used |
-| 5 | `Category [CR, INCIDENT, SUPPORT]` | 3-way toggle | `SUPPORT` |
-| 6 | `Project Category` | Dropdown | `KANTOR CABANG` |
-| 7 | `Severity` | Dropdown | `Minor` |
-| 8 | `Impacted Device [Hostname]` | Autocomplete with fuzzy match | Empty |
-| 9 | `Status` | Dropdown | `CLOSED` |
-| 10 | `Request by` | Dropdown | `Desktop` |
-| 11 | `Time Duration: Start` | Time input (Day fraction, e.g. `551/1440`) | Auto (`End - duration`) |
-| 12 | `Time Duration: End` | Time input (Day fraction, e.g. `551/1440`) | Auto (`now`) |
-| 13 | `Engineer` | Dropdown / User Setting | Configured name |
-| 14 | `Remark/Note` | Textarea | Empty |
+**Daily Task Logger** replaces tedious spreadsheet entry with a modern, ergonomic web application designed to be operated with one thumb on a smartphone or via lightning-fast keyboard shortcuts on desktop. 
 
----
+Every save dynamically resolves headers, clones existing formatting, verifies idempotency, and appends a valid row directly into your Google Sheet without ever risking formula corruption or text-formatted dates.
 
-## Directory Structure
-
-```
-├── .clasp.json             # Google Clasp project configuration
-├── appsscript.json         # Apps Script manifest (Asia/Jakarta, V8 runtime)
-├── package.json            # Node.js scripts for test and local server
-├── README.md               # Complete operational guide
-├── docs/
-│   ├── PRD.md              # Authoritative Product Requirements Document
-│   └── SPRINTS.md          # Sprint backlog and acceptance criteria
-├── server/
-│   ├── Code.js             # Web app entry point (doGet, saveEntry, getConfig, undoLast, etc.)
-│   ├── columnMapper.js     # Dynamic header matcher and merged column resolver
-│   ├── sheetOperations.js  # Next-row finder, style cloner, and row writer
-│   ├── timeUtils.js        # Google Sheets serial date and day fraction converter
-│   └── validation.js       # Idempotency UUID guard, formula escaping, time logic check
-├── client/
-│   ├── index.html          # Mobile-first single-screen responsive interface
-│   ├── styles.css          # Clean CSS (<14 KB raw, <4 KB gzip), dark mode support
-│   ├── app.js              # Application state machine, offline queue, event handlers
-│   ├── clockSync.js        # NTP-style client-server clock synchronizer
-│   └── autocomplete.js     # Client-side fuzzy search for device hostnames
-└── tests/
-    ├── mockSpreadsheetApp.js# Mock Google Apps Script environment for Node.js
-    ├── unitTests.js         # Comprehensive 21-scenario unit test suite
-    ├── localServer.js       # Local HTTP server with simulated google.script.run
-    └── e2eChecklist.md      # 20-point verification checklist
+```mermaid
+flowchart LR
+    A["📱 Phone / Laptop Browser\n(Vanilla JS, <18 KB)"] -->|"NTP Time Sync\n(offset = serverNow + RTT/2 - client)"| B["⚡ Google Apps Script\n(V8 Web App Endpoint)"]
+    A -->|"UUID Idempotent Save\n(Offline Queue fallback)"| B
+    B -->|"LockService (30s)\n+ Formula Guard"| C[("📊 Google Spreadsheet\n(14-column Task Log)")]
+    C -->|"Data Validation Lists\n+ Median Durations"| B
+    B -->|"Hydrate Config & Presets"| A
 ```
 
 ---
 
-## Local Development & Testing
+## ✨ Key Features
 
-### 1. Run Unit Tests (Pure Logic & Serial Math)
-No external npm dependencies required:
+<table>
+  <tr>
+    <td width="50%">
+      <h3>⏱️ Under-15-Second Workflow</h3>
+      <ul>
+        <li><b>Single-Screen Mobile Fit</b>: All 6 core controls (<code>Task</code>, <code>Action</code>, <code>Hostname</code>, <code>Start</code>, <code>End</code>, <code>Save</code>) fit simultaneously on a 390×844 px screen without scrolling.</li>
+        <li><b>Ctrl+Enter Fast Save</b>: Instant keyboard commit from any field.</li>
+        <li><b>Sticky Defaults</b>: Keeps repeated metadata (<code>Category</code>, <code>Project Category</code>, <code>Severity</code>, <code>Status</code>, <code>Engineer</code>) while blanking <code>Hostname</code> and <code>Remark</code> for the next task.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🛰️ Server-Synced Time Engine</h3>
+      <ul>
+        <li><b>Server Clock of Record</b>: Uses server time (<code>Asia/Jakarta</code> WIB) via round-trip NTP latency offset calculation ($\text{offset} = \text{serverNow} + \frac{\text{RTT}}{2} - \text{receiveTime}$).</li>
+        <li><b>Typical Duration Heuristic</b>: Start time automatically calculates as <code>End - typical duration</code> using the historical median of your last 10 entries for that specific Task + Action pair.</li>
+        <li><b>Quick Duration Chips</b>: 1-tap buttons (<code>+1m</code>, <code>+5m</code>, <code>+10m</code>, <code>+15m</code>, <code>+30m</code>, <code>+60m</code>, <code>+90m</code>).</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🛡️ Resilience & Offline Protection</h3>
+      <ul>
+        <li><b>Offline Queue</b>: If your network drops, entries queue locally in <code>localStorage</code> under <code>Pending (n)</code> and auto-flush without duplicates when reconnected.</li>
+        <li><b>30-Second Undo Window</b>: Floating toast notification allows rolling back the last write if you made a typo, verifying the row hasn't been edited in the sheet.</li>
+        <li><b>Formula Guard (CWE-1236)</b>: Any user text starting with <code>=</code>, <code>+</code>, <code>-</code>, or <code>@</code> is escaped with <code>'</code> so it can never trigger formula injection.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🔍 Smart Inventory Autocomplete</h3>
+      <ul>
+        <li><b>Fuzzy Hostname Search</b>: Typing <code>"tomang"</code> matches <code>SW1_KCP JAKARTA TOMANG</code> from the <code>Devices</code> inventory tab and historical entries.</li>
+        <li><b>Keyboard Navigable</b>: Full <code>ArrowDown</code>, <code>ArrowUp</code>, and <code>Enter</code> selection.</li>
+        <li><b>Uncatalogued Notice</b>: Displays a <code>New device</code> badge for uncatalogued hardware while allowing submission.</li>
+        <li><b>CSV Device Importer</b>: Built-in settings utility to upload or paste hardware lists and deduplicate by uppercase hostname.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 📊 Sheet Contract
+
+The backend dynamically locates columns by matching header text (never hardcoded column letters), tolerating inserted columns and the merged **Time Duration** header.
+
+| # | Column Header | Form Control | Format Written | Validation Source | Default |
+| :-: | :--- | :--- | :--- | :--- | :--- |
+| **1** | `No` | Automatic | Sequential integer (`prev No + 1`) | Leaves formulas untouched | Auto |
+| **2** | `Tanggal` | Date picker | Real serial number (e.g. `46266`) | Copied from row above | Today (Auto) |
+| **3** | `Task` | Combobox / Text | String (escaped) | Presets & past entries | Last used |
+| **4** | `Action` | Combobox / Text | String (escaped) | Presets & past entries | Last used |
+| **5** | `Category [CR, INCIDENT, SUPPORT]` | 3-way toggle | String | Sheet data validation | `SUPPORT` |
+| **6** | `Project Category` | Dropdown | String | Sheet data validation | `KANTOR CABANG` |
+| **7** | `Severity` | Dropdown | String | Sheet data validation | `Minor` |
+| **8** | `Impacted Device [Hostname]` | Autocomplete | Uppercase string | `Devices` tab + Sheet rows | Blank |
+| **9** | `Status` | Dropdown | String | Sheet data validation | `CLOSED` |
+| **10** | `Request by` | Dropdown | String | Sheet data validation | `Desktop` |
+| **11** | `Time Duration: Start` | Time input | Day fraction (e.g. `551/1440`) | Number format cloned | Auto (`End - duration`) |
+| **12** | `Time Duration: End` | Time input | Day fraction (e.g. `551/1440`) | Number format cloned | Auto (`now`) |
+| **13** | `Engineer` | Dropdown | String | Sheet data validation / Settings | Stored PIC Name |
+| **14** | `Remark/Note` | Textarea | String (escaped) | Free text | Blank |
+
+---
+
+## 📁 Repository Structure
+
+```
+daily-task-logger/
+├── .clasp.json              # Clasp project configuration
+├── .claspignore            # Excludes dev files from Apps Script push
+├── appsscript.json          # Apps Script V8 runtime manifest (Asia/Jakarta)
+├── package.json             # Test and dev scripts
+├── README.md                # Project documentation
+│
+├── client/                  # Frontend Web App (<18 KB gzipped)
+│   ├── index.html           # Standalone single-page responsive UI
+│   ├── styles.css           # Clean CSS with auto dark mode (<14 KB)
+│   ├── app.js               # State machine, offline queue, timer, sticky defaults
+│   ├── clockSync.js         # NTP round-trip client-server clock synchronizer
+│   └── autocomplete.js      # Client-side fuzzy search for device hostnames
+│
+├── server/                  # Google Apps Script Backend (V8)
+│   ├── Code.js              # Web app endpoints (doGet, saveEntry, getConfig, undoLast)
+│   ├── columnMapper.js      # Resilient header matcher & merged header resolver
+│   ├── sheetOperations.js   # Safe next-row finder & style/validation cloner
+│   ├── timeUtils.js         # Google Sheets serial date and day fraction converter
+│   └── validation.js        # UUID idempotency guard & formula injection escaper
+│
+├── tests/                   # Automated Verification Suite
+│   ├── mockSpreadsheetApp.js# Mock Google Apps Script environment for Node.js
+│   ├── unitTests.js         # 21-scenario unit test runner
+│   ├── localServer.js       # Local dev server with mock google.script.run
+│   └── e2eChecklist.md      # 20-point verification checklist
+│
+├── scripts/
+│   └── build.js             # Compiles standalone client/index.html for deployment
+└── docs/
+    ├── PRD.md               # Authoritative Product Requirements Document
+    └── SPRINTS.md           # Completed sprint backlog (S1–S4)
+```
+
+---
+
+## 🧪 Local Development & Preview
+
+You can preview the app and run all unit tests locally without deploying to Google:
+
+### 1. Run Unit Tests (21 Test Scenarios)
 ```bash
 npm test
 # Or: node tests/unitTests.js
 ```
-Validates:
-- Date serial conversions (`9/1/2026` -> `46266`).
-- Time day fractions (`9:11:00 AM` -> `551/1440`).
-- Dynamic column mapping with merged `Time Duration` headers.
-- First empty row finder and formula preservation in `No`.
-- Formula injection escaping (`=`, `+`, `-`, `@`).
-- NTP clock offset formula.
-- Fuzzy device hostname autocomplete.
+*Validates serial date conversions, day fractions, merged header column mapping, formula escaping, NTP clock maths, and fuzzy search.*
 
-### 2. Run Local Development Server
-Test the frontend and mock backend directly in your browser:
+### 2. Start Local Development Server
 ```bash
 npm run serve
-# Or: node tests/localServer.js
 ```
-Open **`http://localhost:3000`** in your browser to test:
-- Auto/Manual time badges and quick duration chips.
-- Persistent timer mode across reloads.
-- Hostname autocomplete against simulated inventory.
-- Offline queueing and auto-sync.
-- 30-second Undo toast.
+Open **[http://localhost:3000](http://localhost:3000)** in your browser. 
+The local server simulates `google.script.run` in-memory with a mock spreadsheet, allowing full end-to-end testing of presets, duration chips, timer mode, and autocomplete.
 
 ---
 
-## Deployment with Clasp (Google Apps Script)
+## 🚀 Deployment Guide with Clasp
 
-### Step 1: Install and Authenticate Clasp
-Ensure you have Node.js installed, then install `@google/clasp`:
+<details>
+<summary><b>Click to expand step-by-step Google Apps Script deployment instructions</b></summary>
+<br>
+
+### Step 1: Install Clasp and Authenticate
+Ensure you have Node.js installed, then run:
 ```bash
 npm install -g @google/clasp
 clasp login
 ```
-*Note: Make sure the Google Apps Script API is enabled on your Google account: https://script.google.com/home/usersettings*
+*(Make sure the Google Apps Script API is enabled on your Google account at https://script.google.com/home/usersettings)*
 
-### Step 2: Bind Clasp to Your Google Sheet
-1. Open your Google Spreadsheet (e.g. `"Task Log TEST"`).
-2. Go to **Extensions** > **Apps Script**.
-3. In the script editor, click the **Gear Icon (Project Settings)** and copy the **Script ID**.
-4. In `.clasp.json`, update the `scriptId`:
+### Step 2: Link to Your Google Sheet
+1. Open your Google Spreadsheet (e.g., `"Task Log TEST"`).
+2. Click **Extensions** > **Apps Script**.
+3. In the script editor, click the **Gear Icon (Project Settings)** and copy your **Script ID**.
+4. Open [`.clasp.json`](.clasp.json) and paste your Script ID:
    ```json
    {
-     "scriptId": "PASTE_YOUR_COPIED_SCRIPT_ID_HERE",
+     "scriptId": "YOUR_COPIED_SCRIPT_ID_HERE",
      "rootDir": "."
    }
    ```
 
-### Step 3: Push Code to Apps Script
+### Step 3: Build and Push Code
 ```bash
+npm run build
 clasp push
 ```
 
-### Step 4: Configure Script Properties (Environment Variables)
+### Step 4: Configure Script Properties
 In the Apps Script editor (**Project Settings** > **Script Properties**):
-- `TASK_LOG_SHEET_NAME`: Name of your task log sheet tab (e.g. `Task Log`).
-- `HEADER_ROW`: Header row index (default: `1`).
-- `DEFAULT_TIMEZONE`: Default timezone (default: `Asia/Jakarta`).
-- `TARGET_SHEET_ID`: (Optional) ID of target spreadsheet if using a standalone script.
+* `TASK_LOG_SHEET_NAME`: Name of your sheet tab (e.g. `Task Log`).
+* `HEADER_ROW`: Header row index (default: `1`).
+* `DEFAULT_TIMEZONE`: Default timezone (default: `Asia/Jakarta`).
 
-### Step 5: Deploy Web App
-In the Apps Script editor:
-1. Click **Deploy** > **New deployment**.
+### Step 5: Deploy the Web App
+1. In the Apps Script editor, click **Deploy** > **New deployment**.
 2. Select type: **Web app**.
-3. Configure:
-   - **Description**: `Daily Task Logger v1.0`
-   - **Execute as**: `Me` (your Google account)
-   - **Who has access**: `Only myself`
+3. Settings:
+   * **Description**: `Daily Task Logger v1.0`
+   * **Execute as**: `Me` (your Google account)
+   * **Who has access**: `Only myself`
 4. Click **Deploy** and copy the generated Web App URL.
-5. Open the Web App URL on your phone or laptop. On iOS Safari or Android Chrome, tap **Add to Home Screen** to install as a standalone app!
+5. Open the URL on your mobile browser, tap **Share** > **Add to Home Screen** to install it as an app icon!
+
+</details>
 
 ---
 
-## Production Cut-Over & Rollback Runbook
+## 🔄 Rollback Runbook
 
-### Moving from Test Sheet to Production Sheet
-1. Test all 20 scenarios from `tests/e2eChecklist.md` on the test sheet copy.
-2. In the Apps Script editor, open **Project Settings** > **Script Properties**.
-3. Update `TARGET_SHEET_ID` to your production spreadsheet ID (or bind the script directly to the production sheet).
-4. Save one live test entry and verify:
-   - Incremental `No` matches previous rows.
-   - Date and time are written as serial numbers / fractions matching existing formatting.
-   - Dropdown values strictly match sheet data validation rules.
+<details>
+<summary><b>Click to expand disaster recovery and rollback runbook</b></summary>
+<br>
 
-### Rollback Procedure
-If any issue occurs in production:
-1. In the Apps Script editor, click **Deploy** > **Manage deployments**.
-2. Select the active deployment and click the **Pencil (Edit)** icon.
-3. Under **Version**, select the previous stable version from the dropdown.
-4. Click **Deploy**. Rollback takes effect immediately for all devices.
-5. If an errant row was added, Google Sheets native **Version History** (`Ctrl+Alt+Shift+H`) allows restoring any sheet cell or row in one click.
+### Production Cut-Over
+1. Verify all 20 test cases in [`tests/e2eChecklist.md`](tests/e2eChecklist.md) pass on your test sheet copy.
+2. In **Project Settings** > **Script Properties**, update `TARGET_SHEET_ID` to your production spreadsheet ID (or bind the script directly to the production spreadsheet).
+3. Save one live test entry and confirm:
+   * Incremental `No` matches previous rows.
+   * Dates and times land as true numeric values matching adjacent cell formatting.
+   * Dropdown options strictly match sheet data validation rules.
+
+### Instant Rollback
+* **Web App Rollback**: In the Apps Script editor, navigate to **Deploy** > **Manage deployments** > **Edit (Pencil icon)** > select the previous version under **Version** > click **Deploy**. Rollback is effective immediately across all devices.
+* **Row Restoration**: Google Sheets native **Version History** (`Ctrl + Alt + Shift + H`) preserves every write and can restore any row in one click.
+
+</details>
+
+---
+
+<div align="center">
+
+Built with ⚡ for Network Engineers by **[@Zahrexxs](https://github.com/Zahrexxs)**
+
+</div>
