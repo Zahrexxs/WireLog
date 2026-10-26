@@ -45,8 +45,8 @@ flowchart LR
 | **Repository Visibility** | `Private` |
 | **Runtime & Engines** | Google Apps Script (V8 Engine) • Node.js (v18+) for testing |
 | **Frontend Framework** | Plain Vanilla HTML5, Modern CSS3, ES6 Modules (Zero dependencies) |
-| **Production Bundle** | **17.68 KB** gzipped standalone bundle (`client/index.html`) |
-| **Test Coverage** | 21/21 Unit Tests passing (`node tests/unitTests.js`) |
+| **Production Bundle** | **17.92 KB** gzipped standalone bundle (`client/index.html`) |
+| **Test Coverage** | 24/24 Unit Tests passing (`node tests/unitTests.js`) |
 | **License** | [MIT License](LICENSE) |
 
 ### 🚀 Quick Clone Commands

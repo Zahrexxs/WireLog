@@ -623,18 +623,59 @@ body.dark-mode .status-banner {
   color: #fff;
 }
 
-/* Autocomplete Dropdown List */
+/* Combobox & Dropdown Autocomplete (Task, Action, Hostname) */
+.combobox-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.combobox-input {
+  width: 100%;
+  padding-right: 32px !important;
+}
+
+.combobox-toggle {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+
+.combobox-toggle:hover {
+  color: var(--primary);
+  background: var(--chip-bg);
+}
+
+.combobox-toggle.open svg {
+  transform: rotate(180deg);
+}
+
 .autocomplete-list {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 100;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  max-height: 190px;
+  max-height: 220px;
   overflow-y: auto;
   display: none;
 }
@@ -644,13 +685,15 @@ body.dark-mode .status-banner {
 }
 
 .autocomplete-item {
-  padding: 7px 10px;
-  font-size: 0.85rem;
+  padding: 8px 12px;
+  font-size: 0.84rem;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  line-height: 1.35;
+  transition: background 0.1s ease, color 0.1s ease;
 }
 
 .autocomplete-item:last-child {
@@ -660,6 +703,35 @@ body.dark-mode .status-banner {
 .autocomplete-item:hover, .autocomplete-item.active {
   background: var(--chip-active);
   color: var(--primary);
+}
+
+.autocomplete-item .match-text {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autocomplete-item.active .match-text {
+  font-weight: 700;
+}
+
+.autocomplete-item .match-tag {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.autocomplete-empty {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .new-device-badge {

@@ -68,22 +68,24 @@
    * @param {number} maxResults
    * @returns {Array<{ hostname: string, score: number, isExact: boolean }>}
    */
-  function search(query, deviceList, maxResults) {
+  function search(query, list, maxResults) {
     maxResults = maxResults || 8;
-    if (!deviceList || deviceList.length === 0) return [];
+    if (!list || list.length === 0) return [];
     var q = (query || '').trim();
-    if (!q) return deviceList.slice(0, maxResults).map(function(d) {
-      return { hostname: d, score: 0, isExact: false };
+    if (!q) return list.slice(0, maxResults).map(function(d) {
+      return { value: d, text: d, hostname: d, score: 0, isExact: false };
     });
 
     var results = [];
     var qUpper = q.toUpperCase();
 
-    for (var i = 0; i < deviceList.length; i++) {
-      var d = deviceList[i];
+    for (var i = 0; i < list.length; i++) {
+      var d = list[i];
       var score = scoreMatch(q, d);
       if (score !== null) {
         results.push({
+          value: d,
+          text: d,
           hostname: d,
           score: score,
           isExact: d.toUpperCase() === qUpper

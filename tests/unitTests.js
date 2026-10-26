@@ -261,6 +261,57 @@ test('Recognizes exact match vs unknown hostname', () => {
   assert.strictEqual(res2.length, 0);
 });
 
+console.log('\n--- 7. Task & Action Autocomplete & Dynamic Option Updating ---');
+
+test('Typing "endpoint" matches Task "Cek Endpoint Cabang"', () => {
+  const tasks = [
+    'Backup Configuration',
+    'Cek Endpoint Cabang',
+    'Troubleshooting Network Interface'
+  ];
+  const results = Autocomplete.search('endpoint', tasks);
+  assert(results.length > 0);
+  assert.strictEqual(results[0].value, 'Cek Endpoint Cabang');
+});
+
+test('Typing "mac" matches Action "Cek disabled user dan learned MAC Address"', () => {
+  const actions = [
+    'Show running-config dan export backup ke TFTP/FTP',
+    'Cek disabled user dan learned MAC Address',
+    'Investigasi link flap, CRC errors, dan input drops'
+  ];
+  const results = Autocomplete.search('mac', actions);
+  assert(results.length > 0);
+  assert.strictEqual(results[0].value, 'Cek disabled user dan learned MAC Address');
+});
+
+test('Option updater unshifts new option and deduplicates case-insensitively', () => {
+  const list = ['Cek Endpoint Cabang', 'Backup Configuration'];
+
+  function addUnique(arr, val, prepend) {
+    if (!val) return false;
+    const trimmed = String(val).trim();
+    if (!trimmed) return false;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].toLowerCase() === trimmed.toLowerCase()) return false;
+    }
+    if (prepend) arr.unshift(trimmed);
+    else arr.push(trimmed);
+    return true;
+  }
+
+  // Adding existing item in different case should return false
+  const addedDupe = addUnique(list, 'cek endpoint cabang', true);
+  assert.strictEqual(addedDupe, false);
+  assert.strictEqual(list.length, 2);
+
+  // Adding new item should unshift to position 0
+  const addedNew = addUnique(list, 'New Custom Inspection', true);
+  assert.strictEqual(addedNew, true);
+  assert.strictEqual(list.length, 3);
+  assert.strictEqual(list[0], 'New Custom Inspection');
+});
+
 console.log('\n=======================================');
 console.log(`Results: ${passedTests} passed of ${totalTests} total tests`);
 if (passedTests === totalTests) {

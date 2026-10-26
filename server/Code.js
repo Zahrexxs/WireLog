@@ -138,7 +138,10 @@ function getConfig() {
   // 4. Calculate typical durations per Task & Action pair (median of last 10 in sheet)
   var typicalDurations = calculateTypicalDurations(sheet, colMap, headerRow);
 
-  // 5. User settings
+  // 5. Extract unique tasks and actions from sheet history + defaults
+  var distinctData = extractDistinctTasksAndActions(sheet, colMap, headerRow);
+
+  // 6. User settings
   var userProps = PropertiesService.getUserProperties();
   var settings = {
     engineer: userProps.getProperty('ENGINEER_NAME') || '',
@@ -153,6 +156,8 @@ function getConfig() {
     dropdownOptions: dropdownOptions,
     presets: presets,
     devices: devices,
+    tasks: distinctData.tasks,
+    actions: distinctData.actions,
     typicalDurations: typicalDurations,
     settings: settings
   };
@@ -582,6 +587,59 @@ function extractDeviceHostnames(ss, sheet, colMap, headerRow) {
   }
 
   return Object.keys(hostnames);
+}
+
+function extractDistinctTasksAndActions(sheet, colMap, headerRow) {
+  var defaultTasks = [
+    'Cek Endpoint Cabang',
+    'Backup Configuration',
+    'Troubleshooting Network Interface',
+    'VLAN & Port Security Audit',
+    'Firmware Upgrade & Maintenance',
+    'Routing BGP/OSPF Check',
+    'Hardware Replacement (RMA)',
+    'Monitoring & Bandwidth Check'
+  ];
+  var defaultActions = [
+    'Cek disabled user dan learned MAC Address',
+    'Show running-config dan export backup ke TFTP/FTP',
+    'Investigasi link flap, CRC errors, dan input drops',
+    'Konfigurasi access port, trunking, dan port-security',
+    'Verifikasi BGP neighbor status dan routing table',
+    'Inspeksi utilisasi CPU, memory, dan bandwidth uplink',
+    'Reboot dan health-check perangkat setelah maintenance',
+    'Ganti patch cord dan verifikasi link operational up'
+  ];
+
+  var taskMap = {};
+  var actionMap = {};
+  defaultTasks.forEach(function(t) { taskMap[t] = true; });
+  defaultActions.forEach(function(a) { actionMap[a] = true; });
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow > headerRow) {
+    var taskCol = colMap['task'] || 3;
+    var actionCol = colMap['action'] || 4;
+    var minCol = Math.min(taskCol, actionCol);
+    var maxCol = Math.max(taskCol, actionCol);
+    var numCols = maxCol - minCol + 1;
+    var data = sheet.getRange(headerRow + 1, minCol, lastRow - headerRow, numCols).getValues();
+
+    var relTaskIdx = taskCol - minCol;
+    var relActionIdx = actionCol - minCol;
+
+    for (var i = 0; i < data.length; i++) {
+      var tVal = String(data[i][relTaskIdx] || '').trim();
+      var aVal = String(data[i][relActionIdx] || '').trim();
+      if (tVal) taskMap[tVal] = true;
+      if (aVal) actionMap[aVal] = true;
+    }
+  }
+
+  return {
+    tasks: Object.keys(taskMap),
+    actions: Object.keys(actionMap)
+  };
 }
 
 function calculateTypicalDurations(sheet, colMap, headerRow) {

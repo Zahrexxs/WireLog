@@ -66,6 +66,28 @@ let storedDevices = loadJsonFile(DEVICES_FILE, [
   'ROUTER_CORE_HQ'
 ]);
 
+const defaultTasks = [
+  'Cek Endpoint Cabang',
+  'Backup Configuration',
+  'Troubleshooting Network Interface',
+  'VLAN & Port Security Audit',
+  'Firmware Upgrade & Maintenance',
+  'Routing BGP/OSPF Check',
+  'Hardware Replacement (RMA)',
+  'Monitoring & Bandwidth Check'
+];
+
+const defaultActions = [
+  'Cek disabled user dan learned MAC Address',
+  'Show running-config dan export backup ke TFTP/FTP',
+  'Investigasi link flap, CRC errors, dan input drops',
+  'Konfigurasi access port, trunking, dan port-security',
+  'Verifikasi BGP neighbor status dan routing table',
+  'Inspeksi utilisasi CPU, memory, dan bandwidth uplink',
+  'Reboot dan health-check perangkat setelah maintenance',
+  'Ganti patch cord dan verifikasi link operational up'
+];
+
 let storedTasks = loadJsonFile(TASKS_FILE, []);
 
 // MIME types for static assets
@@ -213,8 +235,17 @@ async function handleApi(endpoint, body, res) {
       }
 
       // Local fallback
+      const knownTasks = new Set(defaultTasks);
+      const knownActions = new Set(defaultActions);
+      for (const t of storedTasks) {
+        if (t.task) knownTasks.add(t.task.trim());
+        if (t.action) knownActions.add(t.action.trim());
+      }
+
       responseData = {
         success: true,
+        tasks: Array.from(knownTasks),
+        actions: Array.from(knownActions),
         dropdownOptions: {
           category: ['SUPPORT', 'CR', 'INCIDENT'],
           projectCategory: ['KANTOR CABANG'],

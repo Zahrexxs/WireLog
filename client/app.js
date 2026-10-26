@@ -7,6 +7,29 @@
 (function(window, document) {
   'use strict';
 
+  // --- Default Network Engineering Task & Action Seeds ---
+  var DEFAULT_TASKS = [
+    'Cek Endpoint Cabang',
+    'Backup Configuration',
+    'Troubleshooting Network Interface',
+    'VLAN & Port Security Audit',
+    'Firmware Upgrade & Maintenance',
+    'Routing BGP/OSPF Check',
+    'Hardware Replacement (RMA)',
+    'Monitoring & Bandwidth Check'
+  ];
+
+  var DEFAULT_ACTIONS = [
+    'Cek disabled user dan learned MAC Address',
+    'Show running-config dan export backup ke TFTP/FTP',
+    'Investigasi link flap, CRC errors, dan input drops',
+    'Konfigurasi access port, trunking, dan port-security',
+    'Verifikasi BGP neighbor status dan routing table',
+    'Inspeksi utilisasi CPU, memory, dan bandwidth uplink',
+    'Reboot dan health-check perangkat setelah maintenance',
+    'Ganti patch cord dan verifikasi link operational up'
+  ];
+
   // --- State ---
   var state = {
     // Time tracking
@@ -20,6 +43,8 @@
     dropdownOptions: {},
     presets: [],
     devices: [],
+    tasks: [],
+    actions: [],
     typicalDurations: {},
     settings: {
       engineer: '',
@@ -59,13 +84,18 @@
     el.presetsContainer = document.getElementById('presetsContainer');
     el.weekdayStrip = document.getElementById('weekdayStrip');
 
-    // Form inputs
+    // Form inputs with Combobox Autocomplete
     el.inputTanggal = document.getElementById('inputTanggal');
     el.badgeTanggal = document.getElementById('badgeTanggal');
     el.btnResetTanggal = document.getElementById('btnResetTanggal');
 
     el.inputTask = document.getElementById('inputTask');
+    el.taskList = document.getElementById('taskList');
+    el.btnToggleTask = document.getElementById('btnToggleTask');
+
     el.inputAction = document.getElementById('inputAction');
+    el.actionList = document.getElementById('actionList');
+    el.btnToggleAction = document.getElementById('btnToggleAction');
 
     el.radioCategory = document.getElementsByName('category');
     el.selectProjectCategory = document.getElementById('selectProjectCategory');
@@ -73,6 +103,7 @@
 
     el.inputHostname = document.getElementById('inputHostname');
     el.hostnameList = document.getElementById('hostnameList');
+    el.btnToggleHostname = document.getElementById('btnToggleHostname');
     el.newDeviceNotice = document.getElementById('newDeviceNotice');
 
     el.selectStatus = document.getElementById('selectStatus');
@@ -318,105 +349,242 @@
     }
   }
 
-  // --- Autocomplete ---
-  var activeAutocompleteIdx = -1;
+  // --- Autocomplete & Combobox Helpers ---
+  function addUniqueOption(list, val, prepend) {
+    if (!val) return false;
+    var trimmed = String(val).trim();
+    if (!trimmed) return false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].toLowerCase() === trimmed.toLowerCase()) {
+        return false;
+      }
+    }
+    if (prepend) {
+      list.unshift(trimmed);
+    } else {
+      list.push(trimmed);
+    }
+    return true;
+  }
 
-  function initHostnameAutocomplete() {
-    el.inputHostname.addEventListener('input', function() {
-      var val = this.value;
-      activeAutocompleteIdx = -1;
-      if (!val) {
-        el.hostnameList.classList.remove('visible');
-        el.newDeviceNotice.style.display = 'none';
+  var openComboboxCloseFn = null;
+
+  function setupCombobox(options) {
+    var input = options.input;
+    var list = options.list;
+    var toggleBtn = options.toggleBtn;
+    var getItems = options.getItems;
+    var onSelect = options.onSelect;
+    var maxResults = options.maxResults || 10;
+    var activeIdx = -1;
+
+    if (!input || !list) return null;
+
+    function close() {
+      list.classList.remove('visible');
+      if (toggleBtn) toggleBtn.classList.remove('open');
+      activeIdx = -1;
+      if (openComboboxCloseFn === close) openComboboxCloseFn = null;
+    }
+
+    function renderItems(matches, query) {
+      list.innerHTML = '';
+      activeIdx = -1;
+
+      if (!matches || matches.length === 0) {
+        if (query && query.trim()) {
+          var emptyItem = document.createElement('div');
+          emptyItem.className = 'autocomplete-empty';
+          emptyItem.textContent = 'Custom entry: "' + query.trim() + '" (will be remembered)';
+          list.appendChild(emptyItem);
+          list.classList.add('visible');
+          if (toggleBtn) toggleBtn.classList.add('open');
+        } else {
+          close();
+        }
         return;
       }
 
-      var matches = Autocomplete.search(val, state.devices, 6);
-      renderAutocompleteList(matches, val);
+      for (var i = 0; i < matches.length; i++) {
+        var m = matches[i];
+        var itemVal = m.value || m.hostname || m.text;
+
+        var item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.setAttribute('role', 'option');
+
+        var textSpan = document.createElement('span');
+        textSpan.className = 'match-text';
+        textSpan.textContent = itemVal;
+        item.appendChild(textSpan);
+
+        if (m.isExact) {
+          var tagSpan = document.createElement('span');
+          tagSpan.className = 'match-tag';
+          tagSpan.textContent = 'Exact';
+          item.appendChild(tagSpan);
+        }
+
+        item.addEventListener('click', (function(val) {
+          return function(e) {
+            e.stopPropagation();
+            input.value = val;
+            close();
+            if (typeof onSelect === 'function') onSelect(val);
+            input.focus();
+          };
+        })(itemVal));
+
+        list.appendChild(item);
+      }
+
+      list.classList.add('visible');
+      if (toggleBtn) toggleBtn.classList.add('open');
+      if (openComboboxCloseFn && openComboboxCloseFn !== close) {
+        openComboboxCloseFn();
+      }
+      openComboboxCloseFn = close;
+    }
+
+    function showSuggestions(query) {
+      var allItems = (typeof getItems === 'function') ? getItems() : [];
+      var matches = Autocomplete.search(query || '', allItems, maxResults);
+      renderItems(matches, query);
+    }
+
+    input.addEventListener('input', function() {
+      activeIdx = -1;
+      showSuggestions(this.value);
     });
 
-    el.inputHostname.addEventListener('keydown', function(e) {
-      var items = el.hostnameList.querySelectorAll('.autocomplete-item');
-      if (!items || items.length === 0 || !el.hostnameList.classList.contains('visible')) return;
+    input.addEventListener('focus', function() {
+      showSuggestions(this.value);
+    });
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (list.classList.contains('visible')) {
+          close();
+        } else {
+          input.focus();
+          showSuggestions(input.value);
+        }
+      });
+    }
+
+    input.addEventListener('keydown', function(e) {
+      var items = list.querySelectorAll('.autocomplete-item');
+      if (!items || items.length === 0 || !list.classList.contains('visible')) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          showSuggestions(input.value);
+        }
+        return;
+      }
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        activeAutocompleteIdx = (activeAutocompleteIdx + 1) % items.length;
-        updateActiveAutocompleteItem(items);
+        activeIdx = (activeIdx + 1) % items.length;
+        updateActiveItem(items);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        activeAutocompleteIdx = (activeAutocompleteIdx - 1 + items.length) % items.length;
-        updateActiveAutocompleteItem(items);
-      } else if (e.key === 'Enter' && activeAutocompleteIdx > -1) {
-        e.preventDefault();
-        items[activeAutocompleteIdx].click();
+        activeIdx = (activeIdx - 1 + items.length) % items.length;
+        updateActiveItem(items);
+      } else if (e.key === 'Enter') {
+        if (activeIdx > -1 && items[activeIdx]) {
+          e.preventDefault();
+          items[activeIdx].click();
+        }
       } else if (e.key === 'Escape') {
-        el.hostnameList.classList.remove('visible');
+        e.preventDefault();
+        close();
       }
     });
 
-    el.inputHostname.addEventListener('focus', function() {
-      if (this.value) {
-        var matches = Autocomplete.search(this.value, state.devices, 6);
-        renderAutocompleteList(matches, this.value);
+    function updateActiveItem(items) {
+      for (var i = 0; i < items.length; i++) {
+        if (i === activeIdx) {
+          items[i].classList.add('active');
+          items[i].scrollIntoView({ block: 'nearest' });
+        } else {
+          items[i].classList.remove('active');
+        }
       }
-    });
+    }
 
     document.addEventListener('click', function(e) {
-      if (!el.inputHostname.contains(e.target) && !el.hostnameList.contains(e.target)) {
-        el.hostnameList.classList.remove('visible');
+      if (!input.contains(e.target) && !list.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+        close();
       }
     });
+
+    return {
+      close: close,
+      show: showSuggestions
+    };
   }
 
-  function updateActiveAutocompleteItem(items) {
-    for (var i = 0; i < items.length; i++) {
-      if (i === activeAutocompleteIdx) {
-        items[i].classList.add('active');
-        items[i].scrollIntoView({ block: 'nearest' });
-      } else {
-        items[i].classList.remove('active');
+  function initComboboxes() {
+    // 1. Task combobox dropdown
+    setupCombobox({
+      input: el.inputTask,
+      list: el.taskList,
+      toggleBtn: el.btnToggleTask,
+      getItems: function() { return state.tasks; },
+      maxResults: 10,
+      onSelect: function(taskVal) {
+        if (!el.inputAction.value && state.presets) {
+          var matchedPreset = state.presets.find(function(p) { return p.task === taskVal; });
+          if (matchedPreset && matchedPreset.action) {
+            el.inputAction.value = matchedPreset.action;
+          }
+        }
+        if (state.startAuto) {
+          updateCalculatedStartTime();
+        }
       }
-    }
-  }
+    });
 
-  function renderAutocompleteList(matches, query) {
-    el.hostnameList.innerHTML = '';
-    activeAutocompleteIdx = -1;
-    var isKnown = false;
-    var queryUpper = query.trim().toUpperCase();
+    // 2. Action combobox dropdown
+    setupCombobox({
+      input: el.inputAction,
+      list: el.actionList,
+      toggleBtn: el.btnToggleAction,
+      getItems: function() { return state.actions; },
+      maxResults: 10,
+      onSelect: function(actionVal) {
+        if (state.startAuto) {
+          updateCalculatedStartTime();
+        }
+      }
+    });
 
-    for (var i = 0; i < matches.length; i++) {
-      var m = matches[i];
-      if (m.hostname.toUpperCase() === queryUpper) isKnown = true;
+    // 3. Hostname combobox dropdown
+    setupCombobox({
+      input: el.inputHostname,
+      list: el.hostnameList,
+      toggleBtn: el.btnToggleHostname,
+      getItems: function() { return state.devices; },
+      maxResults: 10,
+      onSelect: function(hostVal) {
+        if (el.newDeviceNotice) el.newDeviceNotice.style.display = 'none';
+      }
+    });
 
-      var item = document.createElement('div');
-      item.className = 'autocomplete-item';
-      item.setAttribute('role', 'option');
-      item.textContent = m.hostname;
-      item.addEventListener('click', (function(host) {
-        return function() {
-          el.inputHostname.value = host;
-          el.hostnameList.classList.remove('visible');
-          el.newDeviceNotice.style.display = 'none';
-        };
-      })(m.hostname));
-
-      el.hostnameList.appendChild(item);
-    }
-
-    if (matches.length > 0) {
-      el.hostnameList.classList.add('visible');
-    } else {
-      el.hostnameList.classList.remove('visible');
-    }
-
-    // New device notice if not found
-    if (!isKnown && query.length > 2) {
-      el.newDeviceNotice.style.display = 'block';
-    } else {
-      el.newDeviceNotice.style.display = 'none';
-    }
+    // Hostname new-device indicator check
+    el.inputHostname.addEventListener('input', function() {
+      var val = (this.value || '').trim().toUpperCase();
+      var isKnown = state.devices.some(function(d) {
+        return d.toUpperCase() === val;
+      });
+      if (!isKnown && val.length > 2) {
+        el.newDeviceNotice.style.display = 'block';
+      } else {
+        el.newDeviceNotice.style.display = 'none';
+      }
+    });
   }
 
   // --- Presets ---
@@ -586,6 +754,22 @@
     if (durationMin > 720) {
       confirmLong = window.confirm('Task duration is over 12 hours (' + Math.round(durationMin / 60) + 'h). Proceed?');
       if (!confirmLong) return;
+    }
+
+    // Automatically register and persist any new Task or Action option for dropdown autocomplete
+    var isNewTask = addUniqueOption(state.tasks, task, true);
+    if (isNewTask) {
+      try { localStorage.setItem('task_logger_tasks', JSON.stringify(state.tasks)); } catch(e) {}
+    }
+
+    var isNewAction = addUniqueOption(state.actions, action, true);
+    if (isNewAction) {
+      try { localStorage.setItem('task_logger_actions', JSON.stringify(state.actions)); } catch(e) {}
+    }
+
+    var isNewDevice = addUniqueOption(state.devices, hostname, true);
+    if (isNewDevice) {
+      try { localStorage.setItem('cached_devices', JSON.stringify(state.devices)); } catch(e) {}
     }
 
     var payload = {
@@ -823,6 +1007,23 @@
           }
         }
 
+        // Merge today's tasks and actions into combobox lists
+        if (res.rows && Array.isArray(res.rows)) {
+          var updatedTasks = false;
+          var updatedActions = false;
+          var updatedDevices = false;
+          res.rows.forEach(function(r) {
+            if (r.task && addUniqueOption(state.tasks, r.task, false)) updatedTasks = true;
+            if (r.action && addUniqueOption(state.actions, r.action, false)) updatedActions = true;
+            if (r.hostname && addUniqueOption(state.devices, r.hostname, false)) updatedDevices = true;
+          });
+          try {
+            if (updatedTasks) localStorage.setItem('task_logger_tasks', JSON.stringify(state.tasks));
+            if (updatedActions) localStorage.setItem('task_logger_actions', JSON.stringify(state.actions));
+            if (updatedDevices) localStorage.setItem('cached_devices', JSON.stringify(state.devices));
+          } catch(e) {}
+        }
+
         renderFeedCards(res.rows);
         updateWeekdayStrip(res.rows);
       }
@@ -968,6 +1169,16 @@
           state.presets = res.presets;
           renderPresets(res.presets);
         }
+        if (res.tasks && Array.isArray(res.tasks)) {
+          var hasNewT = false;
+          res.tasks.forEach(function(t) { if (addUniqueOption(state.tasks, t, false)) hasNewT = true; });
+          if (hasNewT) try { localStorage.setItem('task_logger_tasks', JSON.stringify(state.tasks)); } catch(e) {}
+        }
+        if (res.actions && Array.isArray(res.actions)) {
+          var hasNewA = false;
+          res.actions.forEach(function(a) { if (addUniqueOption(state.actions, a, false)) hasNewA = true; });
+          if (hasNewA) try { localStorage.setItem('task_logger_actions', JSON.stringify(state.actions)); } catch(e) {}
+        }
         if (res.devices) {
           state.devices = res.devices;
           localStorage.setItem('cached_devices', JSON.stringify(res.devices));
@@ -999,6 +1210,20 @@
     if (cachedDevs) {
       try { state.devices = JSON.parse(cachedDevs); } catch(e) {}
     }
+    var cachedTasks = localStorage.getItem('task_logger_tasks');
+    if (cachedTasks) {
+      try { state.tasks = JSON.parse(cachedTasks); } catch(e) {}
+    }
+    if (!state.tasks || state.tasks.length === 0) {
+      state.tasks = DEFAULT_TASKS.slice();
+    }
+    var cachedActions = localStorage.getItem('task_logger_actions');
+    if (cachedActions) {
+      try { state.actions = JSON.parse(cachedActions); } catch(e) {}
+    }
+    if (!state.actions || state.actions.length === 0) {
+      state.actions = DEFAULT_ACTIONS.slice();
+    }
 
     // Theme toggle
     if (state.settings.darkMode) {
@@ -1009,8 +1234,8 @@
     updateClockDisplay();
     setInterval(updateClockDisplay, 1000);
 
-    // Hostname autocomplete
-    initHostnameAutocomplete();
+    // Comboboxes (Task, Action, Hostname autocomplete & dropdowns)
+    initComboboxes();
 
     // Check timer restore
     restoreTimerIfActive();

@@ -631,18 +631,59 @@ body.dark-mode .status-banner {
   color: #fff;
 }
 
-/* Autocomplete Dropdown List */
+/* Combobox & Dropdown Autocomplete (Task, Action, Hostname) */
+.combobox-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.combobox-input {
+  width: 100%;
+  padding-right: 32px !important;
+}
+
+.combobox-toggle {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+
+.combobox-toggle:hover {
+  color: var(--primary);
+  background: var(--chip-bg);
+}
+
+.combobox-toggle.open svg {
+  transform: rotate(180deg);
+}
+
 .autocomplete-list {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 100;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  max-height: 190px;
+  max-height: 220px;
   overflow-y: auto;
   display: none;
 }
@@ -652,13 +693,15 @@ body.dark-mode .status-banner {
 }
 
 .autocomplete-item {
-  padding: 7px 10px;
-  font-size: 0.85rem;
+  padding: 8px 12px;
+  font-size: 0.84rem;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  line-height: 1.35;
+  transition: background 0.1s ease, color 0.1s ease;
 }
 
 .autocomplete-item:last-child {
@@ -668,6 +711,35 @@ body.dark-mode .status-banner {
 .autocomplete-item:hover, .autocomplete-item.active {
   background: var(--chip-active);
   color: var(--primary);
+}
+
+.autocomplete-item .match-text {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autocomplete-item.active .match-text {
+  font-weight: 700;
+}
+
+.autocomplete-item .match-tag {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.autocomplete-empty {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .new-device-badge {
@@ -976,20 +1048,32 @@ body.dark-mode .status-banner {
 
           <!-- Task & Action Row (2 columns on desktop) -->
           <div class="grid-desktop-2">
-            <!-- Task Field -->
+            <!-- Task Field with Autocomplete & Dropdown -->
             <div class="form-group">
               <label class="form-label" for="inputTask">
                 <span>Task <span style="color:var(--danger)">*</span></span>
               </label>
-              <input type="text" id="inputTask" class="form-input" placeholder="e.g. Cek Endpoint Cabang" required autocomplete="off">
+              <div class="combobox-wrapper">
+                <input type="text" id="inputTask" class="form-input combobox-input" placeholder="e.g. Cek Endpoint Cabang" required autocomplete="off" aria-autocomplete="list" aria-controls="taskList">
+                <button type="button" class="combobox-toggle" id="btnToggleTask" title="Show task options" aria-label="Toggle task suggestions" tabindex="-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="autocomplete-list" id="taskList" role="listbox" aria-label="Task suggestions"></div>
+              </div>
             </div>
 
-            <!-- Action Field -->
+            <!-- Action Field with Autocomplete & Dropdown -->
             <div class="form-group">
               <label class="form-label" for="inputAction">
                 <span>Action <span style="color:var(--danger)">*</span></span>
               </label>
-              <input type="text" id="inputAction" class="form-input" placeholder="e.g. Cek disabled user dan learned MAC Address" required autocomplete="off">
+              <div class="combobox-wrapper">
+                <input type="text" id="inputAction" class="form-input combobox-input" placeholder="e.g. Cek disabled user dan learned MAC Address" required autocomplete="off" aria-autocomplete="list" aria-controls="actionList">
+                <button type="button" class="combobox-toggle" id="btnToggleAction" title="Show action options" aria-label="Toggle action suggestions" tabindex="-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="autocomplete-list" id="actionList" role="listbox" aria-label="Action suggestions"></div>
+              </div>
             </div>
           </div>
 
@@ -1001,8 +1085,13 @@ body.dark-mode .status-banner {
                 <span>Impacted Device [Hostname] <span style="color:var(--danger)">*</span></span>
                 <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
               </label>
-              <input type="text" id="inputHostname" class="form-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
-              <div class="autocomplete-list" id="hostnameList" role="listbox" aria-label="Device suggestions"></div>
+              <div class="combobox-wrapper">
+                <input type="text" id="inputHostname" class="form-input combobox-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
+                <button type="button" class="combobox-toggle" id="btnToggleHostname" title="Show device options" aria-label="Toggle device suggestions" tabindex="-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="autocomplete-list" id="hostnameList" role="listbox" aria-label="Device suggestions"></div>
+              </div>
             </div>
 
             <!-- Category 3-way Toggle -->
@@ -1727,22 +1816,24 @@ body.dark-mode .status-banner {
    * @param {number} maxResults
    * @returns {Array<{ hostname: string, score: number, isExact: boolean }>}
    */
-  function search(query, deviceList, maxResults) {
+  function search(query, list, maxResults) {
     maxResults = maxResults || 8;
-    if (!deviceList || deviceList.length === 0) return [];
+    if (!list || list.length === 0) return [];
     var q = (query || '').trim();
-    if (!q) return deviceList.slice(0, maxResults).map(function(d) {
-      return { hostname: d, score: 0, isExact: false };
+    if (!q) return list.slice(0, maxResults).map(function(d) {
+      return { value: d, text: d, hostname: d, score: 0, isExact: false };
     });
 
     var results = [];
     var qUpper = q.toUpperCase();
 
-    for (var i = 0; i < deviceList.length; i++) {
-      var d = deviceList[i];
+    for (var i = 0; i < list.length; i++) {
+      var d = list[i];
       var score = scoreMatch(q, d);
       if (score !== null) {
         results.push({
+          value: d,
+          text: d,
           hostname: d,
           score: score,
           isExact: d.toUpperCase() === qUpper
@@ -1775,6 +1866,29 @@ body.dark-mode .status-banner {
 (function(window, document) {
   'use strict';
 
+  // --- Default Network Engineering Task & Action Seeds ---
+  var DEFAULT_TASKS = [
+    'Cek Endpoint Cabang',
+    'Backup Configuration',
+    'Troubleshooting Network Interface',
+    'VLAN & Port Security Audit',
+    'Firmware Upgrade & Maintenance',
+    'Routing BGP/OSPF Check',
+    'Hardware Replacement (RMA)',
+    'Monitoring & Bandwidth Check'
+  ];
+
+  var DEFAULT_ACTIONS = [
+    'Cek disabled user dan learned MAC Address',
+    'Show running-config dan export backup ke TFTP/FTP',
+    'Investigasi link flap, CRC errors, dan input drops',
+    'Konfigurasi access port, trunking, dan port-security',
+    'Verifikasi BGP neighbor status dan routing table',
+    'Inspeksi utilisasi CPU, memory, dan bandwidth uplink',
+    'Reboot dan health-check perangkat setelah maintenance',
+    'Ganti patch cord dan verifikasi link operational up'
+  ];
+
   // --- State ---
   var state = {
     // Time tracking
@@ -1788,6 +1902,8 @@ body.dark-mode .status-banner {
     dropdownOptions: {},
     presets: [],
     devices: [],
+    tasks: [],
+    actions: [],
     typicalDurations: {},
     settings: {
       engineer: '',
@@ -1827,13 +1943,18 @@ body.dark-mode .status-banner {
     el.presetsContainer = document.getElementById('presetsContainer');
     el.weekdayStrip = document.getElementById('weekdayStrip');
 
-    // Form inputs
+    // Form inputs with Combobox Autocomplete
     el.inputTanggal = document.getElementById('inputTanggal');
     el.badgeTanggal = document.getElementById('badgeTanggal');
     el.btnResetTanggal = document.getElementById('btnResetTanggal');
 
     el.inputTask = document.getElementById('inputTask');
+    el.taskList = document.getElementById('taskList');
+    el.btnToggleTask = document.getElementById('btnToggleTask');
+
     el.inputAction = document.getElementById('inputAction');
+    el.actionList = document.getElementById('actionList');
+    el.btnToggleAction = document.getElementById('btnToggleAction');
 
     el.radioCategory = document.getElementsByName('category');
     el.selectProjectCategory = document.getElementById('selectProjectCategory');
@@ -1841,6 +1962,7 @@ body.dark-mode .status-banner {
 
     el.inputHostname = document.getElementById('inputHostname');
     el.hostnameList = document.getElementById('hostnameList');
+    el.btnToggleHostname = document.getElementById('btnToggleHostname');
     el.newDeviceNotice = document.getElementById('newDeviceNotice');
 
     el.selectStatus = document.getElementById('selectStatus');
@@ -2086,105 +2208,242 @@ body.dark-mode .status-banner {
     }
   }
 
-  // --- Autocomplete ---
-  var activeAutocompleteIdx = -1;
+  // --- Autocomplete & Combobox Helpers ---
+  function addUniqueOption(list, val, prepend) {
+    if (!val) return false;
+    var trimmed = String(val).trim();
+    if (!trimmed) return false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].toLowerCase() === trimmed.toLowerCase()) {
+        return false;
+      }
+    }
+    if (prepend) {
+      list.unshift(trimmed);
+    } else {
+      list.push(trimmed);
+    }
+    return true;
+  }
 
-  function initHostnameAutocomplete() {
-    el.inputHostname.addEventListener('input', function() {
-      var val = this.value;
-      activeAutocompleteIdx = -1;
-      if (!val) {
-        el.hostnameList.classList.remove('visible');
-        el.newDeviceNotice.style.display = 'none';
+  var openComboboxCloseFn = null;
+
+  function setupCombobox(options) {
+    var input = options.input;
+    var list = options.list;
+    var toggleBtn = options.toggleBtn;
+    var getItems = options.getItems;
+    var onSelect = options.onSelect;
+    var maxResults = options.maxResults || 10;
+    var activeIdx = -1;
+
+    if (!input || !list) return null;
+
+    function close() {
+      list.classList.remove('visible');
+      if (toggleBtn) toggleBtn.classList.remove('open');
+      activeIdx = -1;
+      if (openComboboxCloseFn === close) openComboboxCloseFn = null;
+    }
+
+    function renderItems(matches, query) {
+      list.innerHTML = '';
+      activeIdx = -1;
+
+      if (!matches || matches.length === 0) {
+        if (query && query.trim()) {
+          var emptyItem = document.createElement('div');
+          emptyItem.className = 'autocomplete-empty';
+          emptyItem.textContent = 'Custom entry: "' + query.trim() + '" (will be remembered)';
+          list.appendChild(emptyItem);
+          list.classList.add('visible');
+          if (toggleBtn) toggleBtn.classList.add('open');
+        } else {
+          close();
+        }
         return;
       }
 
-      var matches = Autocomplete.search(val, state.devices, 6);
-      renderAutocompleteList(matches, val);
+      for (var i = 0; i < matches.length; i++) {
+        var m = matches[i];
+        var itemVal = m.value || m.hostname || m.text;
+
+        var item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.setAttribute('role', 'option');
+
+        var textSpan = document.createElement('span');
+        textSpan.className = 'match-text';
+        textSpan.textContent = itemVal;
+        item.appendChild(textSpan);
+
+        if (m.isExact) {
+          var tagSpan = document.createElement('span');
+          tagSpan.className = 'match-tag';
+          tagSpan.textContent = 'Exact';
+          item.appendChild(tagSpan);
+        }
+
+        item.addEventListener('click', (function(val) {
+          return function(e) {
+            e.stopPropagation();
+            input.value = val;
+            close();
+            if (typeof onSelect === 'function') onSelect(val);
+            input.focus();
+          };
+        })(itemVal));
+
+        list.appendChild(item);
+      }
+
+      list.classList.add('visible');
+      if (toggleBtn) toggleBtn.classList.add('open');
+      if (openComboboxCloseFn && openComboboxCloseFn !== close) {
+        openComboboxCloseFn();
+      }
+      openComboboxCloseFn = close;
+    }
+
+    function showSuggestions(query) {
+      var allItems = (typeof getItems === 'function') ? getItems() : [];
+      var matches = Autocomplete.search(query || '', allItems, maxResults);
+      renderItems(matches, query);
+    }
+
+    input.addEventListener('input', function() {
+      activeIdx = -1;
+      showSuggestions(this.value);
     });
 
-    el.inputHostname.addEventListener('keydown', function(e) {
-      var items = el.hostnameList.querySelectorAll('.autocomplete-item');
-      if (!items || items.length === 0 || !el.hostnameList.classList.contains('visible')) return;
+    input.addEventListener('focus', function() {
+      showSuggestions(this.value);
+    });
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (list.classList.contains('visible')) {
+          close();
+        } else {
+          input.focus();
+          showSuggestions(input.value);
+        }
+      });
+    }
+
+    input.addEventListener('keydown', function(e) {
+      var items = list.querySelectorAll('.autocomplete-item');
+      if (!items || items.length === 0 || !list.classList.contains('visible')) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          showSuggestions(input.value);
+        }
+        return;
+      }
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        activeAutocompleteIdx = (activeAutocompleteIdx + 1) % items.length;
-        updateActiveAutocompleteItem(items);
+        activeIdx = (activeIdx + 1) % items.length;
+        updateActiveItem(items);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        activeAutocompleteIdx = (activeAutocompleteIdx - 1 + items.length) % items.length;
-        updateActiveAutocompleteItem(items);
-      } else if (e.key === 'Enter' && activeAutocompleteIdx > -1) {
-        e.preventDefault();
-        items[activeAutocompleteIdx].click();
+        activeIdx = (activeIdx - 1 + items.length) % items.length;
+        updateActiveItem(items);
+      } else if (e.key === 'Enter') {
+        if (activeIdx > -1 && items[activeIdx]) {
+          e.preventDefault();
+          items[activeIdx].click();
+        }
       } else if (e.key === 'Escape') {
-        el.hostnameList.classList.remove('visible');
+        e.preventDefault();
+        close();
       }
     });
 
-    el.inputHostname.addEventListener('focus', function() {
-      if (this.value) {
-        var matches = Autocomplete.search(this.value, state.devices, 6);
-        renderAutocompleteList(matches, this.value);
+    function updateActiveItem(items) {
+      for (var i = 0; i < items.length; i++) {
+        if (i === activeIdx) {
+          items[i].classList.add('active');
+          items[i].scrollIntoView({ block: 'nearest' });
+        } else {
+          items[i].classList.remove('active');
+        }
       }
-    });
+    }
 
     document.addEventListener('click', function(e) {
-      if (!el.inputHostname.contains(e.target) && !el.hostnameList.contains(e.target)) {
-        el.hostnameList.classList.remove('visible');
+      if (!input.contains(e.target) && !list.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+        close();
       }
     });
+
+    return {
+      close: close,
+      show: showSuggestions
+    };
   }
 
-  function updateActiveAutocompleteItem(items) {
-    for (var i = 0; i < items.length; i++) {
-      if (i === activeAutocompleteIdx) {
-        items[i].classList.add('active');
-        items[i].scrollIntoView({ block: 'nearest' });
-      } else {
-        items[i].classList.remove('active');
+  function initComboboxes() {
+    // 1. Task combobox dropdown
+    setupCombobox({
+      input: el.inputTask,
+      list: el.taskList,
+      toggleBtn: el.btnToggleTask,
+      getItems: function() { return state.tasks; },
+      maxResults: 10,
+      onSelect: function(taskVal) {
+        if (!el.inputAction.value && state.presets) {
+          var matchedPreset = state.presets.find(function(p) { return p.task === taskVal; });
+          if (matchedPreset && matchedPreset.action) {
+            el.inputAction.value = matchedPreset.action;
+          }
+        }
+        if (state.startAuto) {
+          updateCalculatedStartTime();
+        }
       }
-    }
-  }
+    });
 
-  function renderAutocompleteList(matches, query) {
-    el.hostnameList.innerHTML = '';
-    activeAutocompleteIdx = -1;
-    var isKnown = false;
-    var queryUpper = query.trim().toUpperCase();
+    // 2. Action combobox dropdown
+    setupCombobox({
+      input: el.inputAction,
+      list: el.actionList,
+      toggleBtn: el.btnToggleAction,
+      getItems: function() { return state.actions; },
+      maxResults: 10,
+      onSelect: function(actionVal) {
+        if (state.startAuto) {
+          updateCalculatedStartTime();
+        }
+      }
+    });
 
-    for (var i = 0; i < matches.length; i++) {
-      var m = matches[i];
-      if (m.hostname.toUpperCase() === queryUpper) isKnown = true;
+    // 3. Hostname combobox dropdown
+    setupCombobox({
+      input: el.inputHostname,
+      list: el.hostnameList,
+      toggleBtn: el.btnToggleHostname,
+      getItems: function() { return state.devices; },
+      maxResults: 10,
+      onSelect: function(hostVal) {
+        if (el.newDeviceNotice) el.newDeviceNotice.style.display = 'none';
+      }
+    });
 
-      var item = document.createElement('div');
-      item.className = 'autocomplete-item';
-      item.setAttribute('role', 'option');
-      item.textContent = m.hostname;
-      item.addEventListener('click', (function(host) {
-        return function() {
-          el.inputHostname.value = host;
-          el.hostnameList.classList.remove('visible');
-          el.newDeviceNotice.style.display = 'none';
-        };
-      })(m.hostname));
-
-      el.hostnameList.appendChild(item);
-    }
-
-    if (matches.length > 0) {
-      el.hostnameList.classList.add('visible');
-    } else {
-      el.hostnameList.classList.remove('visible');
-    }
-
-    // New device notice if not found
-    if (!isKnown && query.length > 2) {
-      el.newDeviceNotice.style.display = 'block';
-    } else {
-      el.newDeviceNotice.style.display = 'none';
-    }
+    // Hostname new-device indicator check
+    el.inputHostname.addEventListener('input', function() {
+      var val = (this.value || '').trim().toUpperCase();
+      var isKnown = state.devices.some(function(d) {
+        return d.toUpperCase() === val;
+      });
+      if (!isKnown && val.length > 2) {
+        el.newDeviceNotice.style.display = 'block';
+      } else {
+        el.newDeviceNotice.style.display = 'none';
+      }
+    });
   }
 
   // --- Presets ---
@@ -2354,6 +2613,22 @@ body.dark-mode .status-banner {
     if (durationMin > 720) {
       confirmLong = window.confirm('Task duration is over 12 hours (' + Math.round(durationMin / 60) + 'h). Proceed?');
       if (!confirmLong) return;
+    }
+
+    // Automatically register and persist any new Task or Action option for dropdown autocomplete
+    var isNewTask = addUniqueOption(state.tasks, task, true);
+    if (isNewTask) {
+      try { localStorage.setItem('task_logger_tasks', JSON.stringify(state.tasks)); } catch(e) {}
+    }
+
+    var isNewAction = addUniqueOption(state.actions, action, true);
+    if (isNewAction) {
+      try { localStorage.setItem('task_logger_actions', JSON.stringify(state.actions)); } catch(e) {}
+    }
+
+    var isNewDevice = addUniqueOption(state.devices, hostname, true);
+    if (isNewDevice) {
+      try { localStorage.setItem('cached_devices', JSON.stringify(state.devices)); } catch(e) {}
     }
 
     var payload = {
@@ -2591,6 +2866,23 @@ body.dark-mode .status-banner {
           }
         }
 
+        // Merge today's tasks and actions into combobox lists
+        if (res.rows && Array.isArray(res.rows)) {
+          var updatedTasks = false;
+          var updatedActions = false;
+          var updatedDevices = false;
+          res.rows.forEach(function(r) {
+            if (r.task && addUniqueOption(state.tasks, r.task, false)) updatedTasks = true;
+            if (r.action && addUniqueOption(state.actions, r.action, false)) updatedActions = true;
+            if (r.hostname && addUniqueOption(state.devices, r.hostname, false)) updatedDevices = true;
+          });
+          try {
+            if (updatedTasks) localStorage.setItem('task_logger_tasks', JSON.stringify(state.tasks));
+            if (updatedActions) localStorage.setItem('task_logger_actions', JSON.stringify(state.actions));
+            if (updatedDevices) localStorage.setItem('cached_devices', JSON.stringify(state.devices));
+          } catch(e) {}
+        }
+
         renderFeedCards(res.rows);
         updateWeekdayStrip(res.rows);
       }
@@ -2736,6 +3028,16 @@ body.dark-mode .status-banner {
           state.presets = res.presets;
           renderPresets(res.presets);
         }
+        if (res.tasks && Array.isArray(res.tasks)) {
+          var hasNewT = false;
+          res.tasks.forEach(function(t) { if (addUniqueOption(state.tasks, t, false)) hasNewT = true; });
+          if (hasNewT) try { localStorage.setItem('task_logger_tasks', JSON.stringify(state.tasks)); } catch(e) {}
+        }
+        if (res.actions && Array.isArray(res.actions)) {
+          var hasNewA = false;
+          res.actions.forEach(function(a) { if (addUniqueOption(state.actions, a, false)) hasNewA = true; });
+          if (hasNewA) try { localStorage.setItem('task_logger_actions', JSON.stringify(state.actions)); } catch(e) {}
+        }
         if (res.devices) {
           state.devices = res.devices;
           localStorage.setItem('cached_devices', JSON.stringify(res.devices));
@@ -2767,6 +3069,20 @@ body.dark-mode .status-banner {
     if (cachedDevs) {
       try { state.devices = JSON.parse(cachedDevs); } catch(e) {}
     }
+    var cachedTasks = localStorage.getItem('task_logger_tasks');
+    if (cachedTasks) {
+      try { state.tasks = JSON.parse(cachedTasks); } catch(e) {}
+    }
+    if (!state.tasks || state.tasks.length === 0) {
+      state.tasks = DEFAULT_TASKS.slice();
+    }
+    var cachedActions = localStorage.getItem('task_logger_actions');
+    if (cachedActions) {
+      try { state.actions = JSON.parse(cachedActions); } catch(e) {}
+    }
+    if (!state.actions || state.actions.length === 0) {
+      state.actions = DEFAULT_ACTIONS.slice();
+    }
 
     // Theme toggle
     if (state.settings.darkMode) {
@@ -2777,8 +3093,8 @@ body.dark-mode .status-banner {
     updateClockDisplay();
     setInterval(updateClockDisplay, 1000);
 
-    // Hostname autocomplete
-    initHostnameAutocomplete();
+    // Comboboxes (Task, Action, Hostname autocomplete & dropdowns)
+    initComboboxes();
 
     // Check timer restore
     restoreTimerIfActive();
