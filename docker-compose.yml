@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  daily-task-logger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: daily-task-logger
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      # (Optional) Pre-configure your Google Apps Script Web App URL here, or set it via the Settings UI in your browser:
+      - SPREADSHEET_WEBAPP_URL=${SPREADSHEET_WEBAPP_URL:-}
+      - DEFAULT_TIMEZONE=${DEFAULT_TIMEZONE:-Asia/Jakarta}
+      - DEFAULT_ENGINEER=${DEFAULT_ENGINEER:-Network Engineer}
+    volumes:
+      # Persistent local storage for tasks, devices, and settings
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

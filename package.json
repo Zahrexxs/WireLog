@@ -2,11 +2,15 @@
   "name": "daily-task-logger",
   "version": "1.0.0",
   "description": "Lightweight, mobile-first Google Apps Script web app for logging network engineering daily tasks",
-  "main": "server/Code.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "node tests/unitTests.js",
     "build": "node scripts/build.js",
-    "serve": "node scripts/build.js && node tests/localServer.js"
+    "serve": "node scripts/build.js && node server.js",
+    "docker:build": "docker build -t daily-task-logger .",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "keywords": [
     "google-apps-script",

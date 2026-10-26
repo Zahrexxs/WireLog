@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20Native)-blueviolet)](#architecture--fixed-stack)
 
-[Overview](#-overview) • [Repository Details](#-repository-details) • [Key Features](#-key-features) • [Sheet Contract](#-sheet-contract) • [Local Preview](#-local-development--preview) • [Deployment](#-deployment-guide-with-clasp) • [Rollback Runbook](#-rollback-runbook)
+[Overview](#-overview) • [Repository Details](#-repository-details) • [Docker Deployment](#-docker-deployment-self-hosted) • [Configuring Your Spreadsheet](#-configuring-your-spreadsheet-link) • [Key Features](#-key-features) • [Sheet Contract](#-sheet-contract) • [Local Preview](#-local-development--preview) • [Deployment with Clasp](#-deployment-guide-with-clasp) • [Rollback Runbook](#-rollback-runbook)
 
 ---
 
@@ -66,6 +66,70 @@ gh repo clone Zahrexxs/daily-task-logger
 Navigate into the directory and launch the local test server in one command:
 ```bash
 cd daily-task-logger && npm run serve
+```
+
+---
+
+## 🐳 Docker Deployment (Self-Hosted)
+
+Run Daily Task Logger on your own local server, Raspberry Pi, home lab, or VPS using Docker in under 30 seconds:
+
+### Quick Run with Docker Compose
+```bash
+# 1. Clone the repository
+git clone https://github.com/Zahrexxs/daily-task-logger.git
+cd daily-task-logger
+
+# 2. (Optional) Configure environment
+cp .env.example .env
+
+# 3. Start the container in background
+docker compose up -d
+# Or: docker-compose up -d
+```
+Open **`http://localhost:3000`** (or your server's local IP address like `http://192.168.1.100:3000`) in any phone or laptop browser!
+
+### Run with Docker CLI
+```bash
+# Build the image
+docker build -t daily-task-logger .
+
+# Run with persistent data volume
+docker run -d \
+  --name daily-task-logger \
+  -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  --restart unless-stopped \
+  daily-task-logger
+```
+
+---
+
+## 🔗 Configuring Your Spreadsheet Link
+
+You can easily customize which Google Spreadsheet receives your task logs—either per-user directly through the web UI or globally via environment variables:
+
+### Method 1: In the Web App Settings UI (Easiest)
+1. Open the web app in your browser (`http://localhost:3000`).
+2. Click the **Gear Icon (Settings)** in the top right.
+3. In **Google Sheet Web App URL**, paste your Apps Script Web App link:
+   `https://script.google.com/macros/s/AKfycb.../exec`
+4. Click **Test Connection** to immediately verify communication with your sheet!
+5. Click **Save Preferences**. All new tasks saved from your device will now stream directly to your Google Sheet!
+
+*(Note: If you leave this field blank, the server operates in **Local Storage Mode**, safely storing tasks on your server in `./data/tasks.json`.)*
+
+### Method 2: Global Configuration via `.env`
+In your `.env` file or `docker-compose.yml`:
+```env
+# URL of your Google Apps Script Web App
+SPREADSHEET_WEBAPP_URL=https://script.google.com/macros/s/AKfycb.../exec
+
+# Preferred port (default 3000)
+PORT=3000
+
+# Timezone (default Asia/Jakarta)
+DEFAULT_TIMEZONE=Asia/Jakarta
 ```
 
 ---

@@ -800,15 +800,31 @@
 
   // --- Settings & CSV Device Importer ---
   function openSettingsModal() {
+    var urlInput = document.getElementById('settingSpreadsheetUrl');
+    if (urlInput) urlInput.value = state.settings.spreadsheetUrl || '';
     document.getElementById('settingEngineer').value = state.settings.engineer || '';
     document.getElementById('settingTimezone').value = state.settings.timeZone || 'Asia/Jakarta';
     document.getElementById('settingFallback').value = state.settings.fallbackDuration || 5;
     document.getElementById('settingUppercase').checked = !state.settings.disableUppercaseHostname;
+    var statusEl = document.getElementById('spreadsheetConnectionStatus');
+    if (statusEl) {
+      if (state.settings.spreadsheetUrl) {
+        statusEl.textContent = 'Configured (Click Test to verify)';
+        statusEl.style.color = 'var(--primary)';
+      } else {
+        statusEl.textContent = 'Local Server Mode (Tasks saved locally)';
+        statusEl.style.color = 'var(--text-muted)';
+      }
+    }
     el.settingsModal.classList.add('visible');
   }
 
   function handleSaveSettings(e) {
     e.preventDefault();
+    var urlInput = document.getElementById('settingSpreadsheetUrl');
+    if (urlInput) {
+      state.settings.spreadsheetUrl = urlInput.value.trim();
+    }
     state.settings.engineer = document.getElementById('settingEngineer').value.trim();
     state.settings.timeZone = document.getElementById('settingTimezone').value.trim() || 'Asia/Jakarta';
     state.settings.fallbackDuration = parseInt(document.getElementById('settingFallback').value, 10) || 5;
@@ -816,8 +832,57 @@
 
     localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
     callBackend('saveSettings', state.settings, function() {
-      showToast('Settings saved.', 'info');
+      showToast('Settings saved successfully.', 'info');
       el.settingsModal.classList.remove('visible');
+      // Refresh config if URL changed
+      loadInitialConfig();
+    });
+  }
+
+  function handleTestSpreadsheetConnection() {
+    var urlInput = document.getElementById('settingSpreadsheetUrl');
+    var statusEl = document.getElementById('spreadsheetConnectionStatus');
+    var testBtn = document.getElementById('btnTestSpreadsheet');
+    var targetUrl = urlInput ? urlInput.value.trim() : '';
+
+    if (!targetUrl) {
+      if (statusEl) {
+        statusEl.textContent = 'Please enter a Google Apps Script Web App URL first.';
+        statusEl.style.color = 'var(--warning)';
+      }
+      return;
+    }
+
+    if (testBtn) {
+      testBtn.disabled = true;
+      testBtn.textContent = 'Testing...';
+    }
+    if (statusEl) {
+      statusEl.textContent = 'Testing connection...';
+      statusEl.style.color = 'var(--primary)';
+    }
+
+    callBackend('testSpreadsheet', { url: targetUrl }, function(res) {
+      if (testBtn) {
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test Connection';
+      }
+      if (res && res.success) {
+        statusEl.textContent = 'Connected! ' + (res.message || '');
+        statusEl.style.color = 'var(--success)';
+      } else {
+        statusEl.textContent = 'Error: ' + (res ? res.error : 'Connection failed');
+        statusEl.style.color = 'var(--danger)';
+      }
+    }, function(err) {
+      if (testBtn) {
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test Connection';
+      }
+      if (statusEl) {
+        statusEl.textContent = 'Error connecting to server';
+        statusEl.style.color = 'var(--danger)';
+      }
     });
   }
 
@@ -989,6 +1054,8 @@
     el.btnCloseSettings.addEventListener('click', function() { el.settingsModal.classList.remove('visible'); });
     el.btnCloseHistory.addEventListener('click', function() { el.historyModal.classList.remove('visible'); });
     el.formSettings.addEventListener('submit', handleSaveSettings);
+    var btnTest = document.getElementById('btnTestSpreadsheet');
+    if (btnTest) btnTest.addEventListener('click', handleTestSpreadsheetConnection);
     el.btnImportCsv.addEventListener('click', handleDeviceCsvImport);
 
     // CSV File Reader

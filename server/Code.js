@@ -18,6 +18,48 @@ function doGet(e) {
 }
 
 /**
+ * Handles external POST requests from self-hosted Docker containers or mobile clients
+ */
+function doPost(e) {
+  var output = { success: false, error: 'Invalid request' };
+
+  try {
+    var raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
+    var data = JSON.parse(raw);
+    var action = data.action || (e && e.parameter ? e.parameter.action : null);
+    var payload = data.payload || data;
+
+    if (action === 'serverTime') {
+      output = serverTime();
+    } else if (action === 'getConfig') {
+      output = getConfig();
+    } else if (action === 'saveEntry') {
+      output = saveEntry(payload);
+    } else if (action === 'undoLast') {
+      output = undoLast(payload);
+    } else if (action === 'todayRows') {
+      output = todayRows();
+    } else if (action === 'saveSettings') {
+      output = saveSettings(payload);
+    } else if (action === 'importDevices') {
+      output = importDevices(payload);
+    } else {
+      // Default to saveEntry if payload looks like an entry
+      if (payload.task && payload.action && payload.hostname) {
+        output = saveEntry(payload);
+      } else {
+        output = { success: false, error: 'Unknown action: ' + action };
+      }
+    }
+  } catch (err) {
+    output = { success: false, error: err.message || String(err) };
+  }
+
+  return ContentService.createTextOutput(JSON.stringify(output))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
  * Inlines partial files into Apps Script HTML templates
  */
 function include(filename) {

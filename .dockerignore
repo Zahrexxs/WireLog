@@ -1,0 +1,8 @@
+node_modules
+.git
+.github
+.clasp.json
+.clasprc.json
+.env
+*.log
+tests/
