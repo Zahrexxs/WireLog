@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Daily Task Logger</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z'/></svg>">
+  <style>
+    /* Inlined styles or template inclusion */
+    <?!= typeof include === 'function' ? include('client/styles.css') : '' ?>
+  </style>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Header & App Bar -->
+    <header class="top-header">
+      <div class="logo-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <h1>Task Logger</h1>
+        <div class="clock-display" id="currentClock">--:--:-- --</div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="icon-btn" id="btnThemeToggle" title="Toggle theme">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btnHistory" title="Today's entries">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btnSettings" title="Settings">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Weekday Coverage Strip (Mon-Fri) -->
+    <div class="weekday-strip" id="weekdayStrip">
+      <div class="weekday-col"><span class="weekday-name">Mon</span><div class="weekday-count">0</div></div>
+      <div class="weekday-col"><span class="weekday-name">Tue</span><div class="weekday-count">0</div></div>
+      <div class="weekday-col"><span class="weekday-name">Wed</span><div class="weekday-count">0</div></div>
+      <div class="weekday-col"><span class="weekday-name">Thu</span><div class="weekday-count">0</div></div>
+      <div class="weekday-col"><span class="weekday-name">Fri</span><div class="weekday-count">0</div></div>
+    </div>
+
+    <!-- Offline / Sync Status Banner -->
+    <div class="status-banner" id="statusBanner">
+      <span class="pulse-dot"></span>
+      <span id="statusBannerText">Offline (0 Pending)</span>
+    </div>
+
+    <!-- Quick Presets -->
+    <div class="presets-container" id="presetsContainer">
+      <button type="button" class="preset-chip">Cek Endpoint Cabang</button>
+    </div>
+
+    <!-- Main Entry Form -->
+    <form class="form-card" id="taskForm" onsubmit="return false;">
+
+      <!-- Task Field -->
+      <div class="form-group">
+        <label class="form-label" for="inputTask">
+          <span>Task <span style="color:var(--danger)">*</span></span>
+        </label>
+        <input type="text" id="inputTask" class="form-input" placeholder="e.g. Cek Endpoint Cabang" required autocomplete="off">
+      </div>
+
+      <!-- Action Field -->
+      <div class="form-group">
+        <label class="form-label" for="inputAction">
+          <span>Action <span style="color:var(--danger)">*</span></span>
+        </label>
+        <input type="text" id="inputAction" class="form-input" placeholder="e.g. Cek disabled user dan learned MAC Address" required autocomplete="off">
+      </div>
+
+      <!-- Impacted Device [Hostname] Field with Autocomplete -->
+      <div class="form-group">
+        <label class="form-label" for="inputHostname">
+          <span>Impacted Device [Hostname] <span style="color:var(--danger)">*</span></span>
+          <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
+        </label>
+        <input type="text" id="inputHostname" class="form-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off">
+        <div class="autocomplete-list" id="hostnameList"></div>
+      </div>
+
+      <!-- Time Duration (Start, End) -->
+      <div class="time-row">
+        <!-- Start Time -->
+        <div class="form-group">
+          <label class="form-label" for="inputStart">
+            <span class="time-header-badge">
+              Start
+              <span class="badge badge-auto" id="badgeStart">Auto</span>
+            </span>
+            <button type="button" class="btn-reset-time" id="btnResetStart" title="Reset to Auto" style="display:none">&#8635;</button>
+          </label>
+          <div class="time-input-container">
+            <input type="time" id="inputStart" class="form-input" required>
+          </div>
+        </div>
+
+        <!-- End Time -->
+        <div class="form-group">
+          <label class="form-label" for="inputEnd">
+            <span class="time-header-badge">
+              End
+              <span class="badge badge-auto" id="badgeEnd">Auto</span>
+            </span>
+            <button type="button" class="btn-reset-time" id="btnResetEnd" title="Reset to Auto" style="display:none">&#8635;</button>
+          </label>
+          <div class="time-input-container">
+            <input type="time" id="inputEnd" class="form-input" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Duration Chips & Timer Mode -->
+      <div class="chips-row" id="chipsContainer">
+        <button type="button" class="chip-btn" data-min="1">+1m</button>
+        <button type="button" class="chip-btn" data-min="5">+5m</button>
+        <button type="button" class="chip-btn" data-min="10">+10m</button>
+        <button type="button" class="chip-btn" data-min="15">+15m</button>
+        <button type="button" class="chip-btn" data-min="30">+30m</button>
+        <button type="button" class="chip-btn" data-min="60">+60m</button>
+        <button type="button" class="chip-btn" data-min="90">+90m</button>
+        <button type="button" class="timer-btn" id="timerBtn" title="Start persistent task timer">&#9654; Timer</button>
+      </div>
+
+      <!-- Category 3-way Toggle -->
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <div class="segmented-control">
+          <input type="radio" name="category" id="catSupport" value="SUPPORT" checked>
+          <label for="catSupport">SUPPORT</label>
+          <input type="radio" name="category" id="catCr" value="CR">
+          <label for="catCr">CR</label>
+          <input type="radio" name="category" id="catIncident" value="INCIDENT">
+          <label for="catIncident">INCIDENT</label>
+        </div>
+      </div>
+
+      <!-- Collapsible Section: Secondary Details -->
+      <button type="button" class="collapsible-trigger" id="btnMore">
+        &#9660; More details
+      </button>
+
+      <div class="collapsible-content" id="moreContent">
+        <!-- Date (Tanggal) -->
+        <div class="form-group">
+          <label class="form-label" for="inputTanggal">
+            <span class="time-header-badge">
+              Tanggal
+              <span class="badge badge-auto" id="badgeTanggal">Auto</span>
+            </span>
+            <button type="button" class="btn-reset-time" id="btnResetTanggal" title="Reset to Today" style="display:none">&#8635;</button>
+          </label>
+          <input type="date" id="inputTanggal" class="form-input" required>
+        </div>
+
+        <div class="grid-2">
+          <!-- Project Category -->
+          <div class="form-group">
+            <label class="form-label" for="selectProjectCategory">Project Category</label>
+            <select id="selectProjectCategory" class="form-select">
+              <option value="KANTOR CABANG">KANTOR CABANG</option>
+            </select>
+          </div>
+
+          <!-- Severity -->
+          <div class="form-group">
+            <label class="form-label" for="selectSeverity">Severity</label>
+            <select id="selectSeverity" class="form-select">
+              <option value="Minor">Minor</option>
+              <option value="Major">Major</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Status -->
+          <div class="form-group">
+            <label class="form-label" for="selectStatus">Status</label>
+            <select id="selectStatus" class="form-select">
+              <option value="CLOSED">CLOSED</option>
+              <option value="IN PROGRESS">IN PROGRESS</option>
+              <option value="PENDING">PENDING</option>
+              <option value="OPEN">OPEN</option>
+            </select>
+          </div>
+
+          <!-- Request by -->
+          <div class="form-group">
+            <label class="form-label" for="selectRequestBy">Request by</label>
+            <select id="selectRequestBy" class="form-select">
+              <option value="Desktop">Desktop</option>
+              <option value="IT REP">IT REP</option>
+              <option value="Network">Network</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Engineer -->
+        <div class="form-group">
+          <label class="form-label" for="selectEngineer">Engineer</label>
+          <select id="selectEngineer" class="form-select">
+            <option value="">(Select Engineer)</option>
+          </select>
+        </div>
+
+        <!-- Remark/Note -->
+        <div class="form-group">
+          <label class="form-label" for="inputRemark">Remark / Note</label>
+          <textarea id="inputRemark" class="form-textarea" placeholder="Optional notes or context"></textarea>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="action-buttons">
+        <button type="button" class="btn-save" id="btnSave">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Save Task (Ctrl+Enter)
+        </button>
+      </div>
+
+    </form>
+
+    <!-- Floating Toast Notification with Undo -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Today's Entries Modal -->
+    <div class="modal-overlay" id="historyModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span class="modal-title">Today's Entries</span>
+          <span id="historyTotal" style="font-size:0.8rem;color:var(--text-muted);margin-left:auto;margin-right:12px;"></span>
+          <button type="button" class="btn-close" id="btnCloseHistory">&times;</button>
+        </div>
+        <div class="entries-list" id="historyList"></div>
+      </div>
+    </div>
+
+    <!-- Settings & CSV Import Modal -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span class="modal-title">Settings & Devices</span>
+          <button type="button" class="btn-close" id="btnCloseSettings">&times;</button>
+        </div>
+
+        <form id="formSettings">
+          <div class="form-group">
+            <label class="form-label" for="settingEngineer">Default Engineer Name</label>
+            <input type="text" id="settingEngineer" class="form-input" placeholder="Your name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingTimezone">Timezone</label>
+            <input type="text" id="settingTimezone" class="form-input" value="Asia/Jakarta">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingFallback">Fallback Duration (minutes)</label>
+            <input type="number" id="settingFallback" class="form-input" value="5" min="1" max="120">
+          </div>
+
+          <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+            <input type="checkbox" id="settingUppercase" checked>
+            <label for="settingUppercase" style="font-size:0.85rem;">Auto-uppercase hostnames</label>
+          </div>
+
+          <div style="margin-top:12px;">
+            <button type="submit" class="btn-save" style="height:36px;font-size:0.88rem;">Save Preferences</button>
+          </div>
+        </form>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0;">
+
+        <!-- Device CSV Inventory Importer -->
+        <div>
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:6px;">Device Inventory Import</h3>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">
+            Upload or paste CSV with Hostname, Site, Project Category columns to update the <code>Devices</code> tab.
+          </p>
+
+          <div class="form-group">
+            <input type="file" id="csvFileInput" accept=".csv" class="form-input" style="height:auto;padding:6px;">
+          </div>
+
+          <div class="form-group">
+            <textarea id="csvTextarea" class="form-textarea" placeholder="Hostname, Site, Project Category&#10;SW1_KCP JAKARTA TOMANG, Jakarta, KANTOR CABANG" style="font-family:monospace;font-size:0.78rem;"></textarea>
+          </div>
+
+          <button type="button" id="btnImportCsv" class="btn-save" style="height:36px;font-size:0.88rem;background:var(--accent);">
+            Import to Devices Tab
+          </button>
+          <div id="csvImportResult" style="font-size:0.8rem;margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Inlined or referenced scripts -->
+  <script><?!= typeof include === 'function' ? include('server/timeUtils.js') : '' ?></script>
+  <script><?!= typeof include === 'function' ? include('client/clockSync.js') : '' ?></script>
+  <script><?!= typeof include === 'function' ? include('client/autocomplete.js') : '' ?></script>
+  <script><?!= typeof include === 'function' ? include('client/app.js') : '' ?></script>
+  <script src="../server/timeUtils.js"></script>
+  <script src="clockSync.js"></script>
+  <script src="autocomplete.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

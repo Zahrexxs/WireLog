@@ -1,0 +1,12 @@
+# Dependencies and environment
+node_modules/
+.env
+.env.local
+*.log
+
+# Clasp auth token (NEVER commit credentials)
+.clasprc.json
+
+# OS files
+.DS_Store
+Thumbs.db

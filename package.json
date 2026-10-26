@@ -1,0 +1,18 @@
+{
+  "name": "daily-task-logger",
+  "version": "1.0.0",
+  "description": "Lightweight, mobile-first Google Apps Script web app for logging network engineering daily tasks",
+  "main": "server/Code.js",
+  "scripts": {
+    "test": "node tests/unitTests.js",
+    "serve": "node tests/localServer.js"
+  },
+  "keywords": [
+    "google-apps-script",
+    "network-engineering",
+    "task-logger",
+    "google-sheets"
+  ],
+  "author": "Zahrexxs",
+  "license": "MIT"
+}
