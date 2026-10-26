@@ -38,7 +38,8 @@ flowchart LR
 
 | Specification | Detail |
 | :--- | :--- |
-| **Repository URL** | [`https://github.com/Zahrexxs/daily-task-logger`](https://github.com/Zahrexxs/daily-task-logger) |
+| **Project Name** | **WireLog** |
+| **Repository URL** | [`https://github.com/Zahrexxs/WireLog`](https://github.com/Zahrexxs/WireLog) |
 | **Owner / Maintainer** | **[@Zahrexxs](https://github.com/Zahrexxs)** |
 | **Default Branch** | `main` |
 | **Repository Visibility** | `Private` |
@@ -54,18 +55,18 @@ Choose your preferred git protocol:
 
 ```bash
 # Via HTTPS
-git clone https://github.com/Zahrexxs/daily-task-logger.git
+git clone https://github.com/Zahrexxs/WireLog.git
 
 # Via SSH
-git clone git@github.com:Zahrexxs/daily-task-logger.git
+git clone git@github.com:Zahrexxs/WireLog.git
 
 # Via GitHub CLI
-gh repo clone Zahrexxs/daily-task-logger
+gh repo clone Zahrexxs/WireLog
 ```
 
 Navigate into the directory and launch the local test server in one command:
 ```bash
-cd daily-task-logger && npm run serve
+cd WireLog && npm run serve
 ```
 
 ---

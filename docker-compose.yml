@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  daily-task-logger:
+  wirelog:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: daily-task-logger
+    container_name: wirelog
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"

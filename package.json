@@ -1,14 +1,14 @@
 {
-  "name": "daily-task-logger",
+  "name": "wirelog",
   "version": "1.0.0",
-  "description": "Lightweight, mobile-first Google Apps Script web app for logging network engineering daily tasks",
+  "description": "Ergonomic, desktop-first web app for network engineers logging daily tasks directly into Google Sheets",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "node tests/unitTests.js",
     "build": "node scripts/build.js",
     "serve": "node scripts/build.js && node server.js",
-    "docker:build": "docker build -t daily-task-logger .",
+    "docker:build": "docker build -t wirelog .",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"
   },
