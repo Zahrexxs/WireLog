@@ -41,6 +41,17 @@
   // --- DOM Elements ---
   var el = {};
 
+  // HTML sanitization helper to prevent Stored XSS (CWE-79)
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function initElements() {
     el.currentClock = document.getElementById('currentClock');
     el.statusBanner = document.getElementById('statusBanner');
@@ -301,9 +312,12 @@
   }
 
   // --- Autocomplete ---
+  var activeAutocompleteIdx = -1;
+
   function initHostnameAutocomplete() {
     el.inputHostname.addEventListener('input', function() {
       var val = this.value;
+      activeAutocompleteIdx = -1;
       if (!val) {
         el.hostnameList.classList.remove('visible');
         el.newDeviceNotice.style.display = 'none';
@@ -312,6 +326,26 @@
 
       var matches = Autocomplete.search(val, state.devices, 6);
       renderAutocompleteList(matches, val);
+    });
+
+    el.inputHostname.addEventListener('keydown', function(e) {
+      var items = el.hostnameList.querySelectorAll('.autocomplete-item');
+      if (!items || items.length === 0 || !el.hostnameList.classList.contains('visible')) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeAutocompleteIdx = (activeAutocompleteIdx + 1) % items.length;
+        updateActiveAutocompleteItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeAutocompleteIdx = (activeAutocompleteIdx - 1 + items.length) % items.length;
+        updateActiveAutocompleteItem(items);
+      } else if (e.key === 'Enter' && activeAutocompleteIdx > -1) {
+        e.preventDefault();
+        items[activeAutocompleteIdx].click();
+      } else if (e.key === 'Escape') {
+        el.hostnameList.classList.remove('visible');
+      }
     });
 
     el.inputHostname.addEventListener('focus', function() {
@@ -328,8 +362,20 @@
     });
   }
 
+  function updateActiveAutocompleteItem(items) {
+    for (var i = 0; i < items.length; i++) {
+      if (i === activeAutocompleteIdx) {
+        items[i].classList.add('active');
+        items[i].scrollIntoView({ block: 'nearest' });
+      } else {
+        items[i].classList.remove('active');
+      }
+    }
+  }
+
   function renderAutocompleteList(matches, query) {
     el.hostnameList.innerHTML = '';
+    activeAutocompleteIdx = -1;
     var isKnown = false;
     var queryUpper = query.trim().toUpperCase();
 
@@ -339,6 +385,7 @@
 
       var item = document.createElement('div');
       item.className = 'autocomplete-item';
+      item.setAttribute('role', 'option');
       item.textContent = m.hostname;
       item.addEventListener('click', (function(host) {
         return function() {
@@ -739,11 +786,11 @@
         res.rows.forEach(function(r) {
           html += '<div class="entry-card">' +
             '<div class="entry-card-header">' +
-            '<span>Row #' + r.rowNumber + '</span>' +
-            '<span>' + r.timeStart + ' - ' + r.timeEnd + ' (' + r.durationMinutes + 'm)</span>' +
+            '<span>Row #' + escapeHtml(r.rowNumber) + '</span>' +
+            '<span>' + escapeHtml(r.timeStart) + ' - ' + escapeHtml(r.timeEnd) + ' (' + escapeHtml(r.durationMinutes) + 'm)</span>' +
             '</div>' +
-            '<div class="entry-card-title">' + r.task + '</div>' +
-            '<div class="entry-card-meta">' + r.action + ' &bull; <strong>' + r.hostname + '</strong></div>' +
+            '<div class="entry-card-title">' + escapeHtml(r.task) + '</div>' +
+            '<div class="entry-card-meta">' + escapeHtml(r.action) + ' &bull; <strong>' + escapeHtml(r.hostname) + '</strong></div>' +
             '</div>';
         });
         el.historyList.innerHTML = html;
@@ -914,6 +961,7 @@
     // Collapsible "More" details
     el.btnMore.addEventListener('click', function() {
       var isExpanded = el.moreContent.classList.toggle('expanded');
+      el.btnMore.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
       el.btnMore.innerHTML = isExpanded ? '&#9650; Less details' : '&#9660; More details';
     });
 

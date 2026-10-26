@@ -6,9 +6,742 @@
   <title>Daily Task Logger</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z'/></svg>">
   <style>
-    /* Inlined styles or template inclusion */
-    <?!= typeof include === 'function' ? include('client/styles.css') : '' ?>
-  </style>
+/* Daily Task Logger — Modern Mobile-First Stylesheet */
+:root {
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-focus: #3b82f6;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-fg: #ffffff;
+  --accent: #0ea5e9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --chip-bg: #f1f5f9;
+  --chip-active: #dbeafe;
+  --chip-text: #1e3a8a;
+  --badge-auto-bg: #ecfdf5;
+  --badge-auto-text: #065f46;
+  --badge-manual-bg: #fffbeb;
+  --badge-manual-text: #92400e;
+  --radius: 8px;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0b0f19;
+    --card-bg: #151d2f;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --border-color: #243048;
+    --border-focus: #60a5fa;
+    --primary: #3b82f6;
+    --primary-hover: #60a5fa;
+    --primary-active: #2563eb;
+    --chip-bg: #1c273e;
+    --chip-active: #1e3a8a;
+    --chip-text: #bfdbfe;
+    --badge-auto-bg: #064e3b;
+    --badge-auto-text: #a7f3d0;
+    --badge-manual-bg: #78350f;
+    --badge-manual-text: #fde68a;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  }
+}
+
+body.dark-mode {
+  --bg-color: #0b0f19;
+  --card-bg: #151d2f;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #243048;
+  --border-focus: #60a5fa;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --chip-bg: #1c273e;
+  --chip-active: #1e3a8a;
+  --chip-text: #bfdbfe;
+  --badge-auto-bg: #064e3b;
+  --badge-auto-text: #a7f3d0;
+  --badge-manual-bg: #78350f;
+  --badge-manual-text: #fde68a;
+}
+
+body.light-mode {
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --chip-bg: #f1f5f9;
+  --chip-active: #dbeafe;
+  --chip-text: #1e3a8a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.4;
+  padding-bottom: 70px;
+}
+
+.app-container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 8px 12px;
+}
+
+/* Header & Status Bar */
+.top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px 8px 2px;
+}
+
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-title h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.clock-display {
+  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-secondary);
+  background: var(--chip-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.icon-btn:hover {
+  background: var(--chip-bg);
+  color: var(--text-primary);
+}
+
+/* Weekday Coverage Strip */
+.weekday-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+}
+
+.weekday-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.weekday-name {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.weekday-count {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.72rem;
+  background: var(--chip-bg);
+  color: var(--text-secondary);
+}
+
+.weekday-count.has-entries {
+  background: var(--primary);
+  color: #fff;
+}
+
+.weekday-count.today {
+  border: 2px solid var(--accent);
+}
+
+.weekday-count.missed {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+/* Offline / Sync Status Banner */
+.status-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+body.dark-mode .status-banner {
+  background: #78350f;
+  color: #fef3c7;
+  border-color: #92400e;
+}
+
+.status-banner.visible {
+  display: flex;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Presets Bar */
+.presets-container {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  scrollbar-width: none;
+}
+.presets-container::-webkit-scrollbar { display: none; }
+
+.preset-chip {
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.preset-chip:hover, .preset-chip:active {
+  background: var(--chip-active);
+  border-color: var(--primary);
+}
+
+/* Form Layout */
+.form-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: var(--shadow);
+}
+
+.form-group {
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.form-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  height: 38px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-color);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.form-textarea {
+  height: 52px;
+  resize: vertical;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--border-focus);
+  background: var(--card-bg);
+}
+
+/* 3-way Category Toggle */
+.segmented-control {
+  display: flex;
+  background: var(--chip-bg);
+  border-radius: var(--radius);
+  padding: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.segmented-control input[type="radio"] {
+  display: none;
+}
+
+.segmented-control label {
+  flex: 1;
+  text-align: center;
+  padding: 6px 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.segmented-control input[type="radio"]:checked + label {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+/* Time Duration Row */
+.time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.time-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-auto {
+  background: var(--badge-auto-bg);
+  color: var(--badge-auto-text);
+}
+
+.badge-manual {
+  background: var(--badge-manual-bg);
+  color: var(--badge-manual-text);
+}
+
+.time-input-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-input-container .form-input {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.btn-reset-time {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-reset-time:hover {
+  color: var(--primary);
+}
+
+/* Duration Chips */
+.chips-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 2px 0 6px 0;
+  margin-bottom: 6px;
+  scrollbar-width: none;
+}
+.chips-row::-webkit-scrollbar { display: none; }
+
+.chip-btn {
+  background: var(--chip-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.chip-btn:hover, .chip-btn:active {
+  background: var(--chip-active);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Timer Control Button */
+.timer-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card-bg);
+  border: 1px dashed var(--border-focus);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.timer-btn.active {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+/* Autocomplete Dropdown List */
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  max-height: 190px;
+  overflow-y: auto;
+  display: none;
+}
+
+.autocomplete-list.visible {
+  display: block;
+}
+
+.autocomplete-item {
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover, .autocomplete-item.active {
+  background: var(--chip-active);
+  color: var(--primary);
+}
+
+.new-device-badge {
+  font-size: 0.65rem;
+  background: #fef3c7;
+  color: #b45309;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Collapsible "More Details" Section */
+.collapsible-trigger {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.collapsible-trigger:hover {
+  color: var(--primary);
+}
+
+.collapsible-content {
+  display: none;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-color);
+  margin-top: 4px;
+}
+
+.collapsible-content.expanded {
+  display: block;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Primary Action Buttons */
+.action-buttons {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-save {
+  flex: 1;
+  height: 44px; /* 44px minimum tap target for accessibility */
+  background: var(--primary);
+  color: var(--primary-fg);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.btn-save:hover {
+  background: var(--primary-hover);
+}
+
+.btn-save:active {
+  background: var(--primary-active);
+  transform: translateY(1px);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Toast with Undo */
+.toast-container {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.toast {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: auto;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast.error {
+  background: #991b1b;
+}
+
+.toast.warning {
+  background: #92400e;
+}
+
+.btn-undo {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-undo:hover {
+  background: #2563eb;
+}
+
+/* Modals (Settings, Today's list) */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.modal-overlay.visible {
+  display: flex;
+}
+
+.modal-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+/* Today's Entries Feed */
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entry-card {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--bg-color);
+}
+
+.entry-card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.entry-card-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 2px 0;
+}
+
+.entry-card-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+</style>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -28,13 +761,13 @@
         <div class="clock-display" id="currentClock">--:--:-- --</div>
       </div>
       <div class="header-actions">
-        <button type="button" class="icon-btn" id="btnThemeToggle" title="Toggle theme">
+        <button type="button" class="icon-btn" id="btnThemeToggle" title="Toggle theme" aria-label="Toggle dark/light theme">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         </button>
-        <button type="button" class="icon-btn" id="btnHistory" title="Today's entries">
+        <button type="button" class="icon-btn" id="btnHistory" title="Today's entries" aria-label="View today's entries">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         </button>
-        <button type="button" class="icon-btn" id="btnSettings" title="Settings">
+        <button type="button" class="icon-btn" id="btnSettings" title="Settings" aria-label="Open settings and device inventory">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
       </div>
@@ -85,8 +818,8 @@
           <span>Impacted Device [Hostname] <span style="color:var(--danger)">*</span></span>
           <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
         </label>
-        <input type="text" id="inputHostname" class="form-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off">
-        <div class="autocomplete-list" id="hostnameList"></div>
+        <input type="text" id="inputHostname" class="form-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
+        <div class="autocomplete-list" id="hostnameList" role="listbox" aria-label="Device suggestions"></div>
       </div>
 
       <!-- Time Duration (Start, End) -->
@@ -146,7 +879,7 @@
       </div>
 
       <!-- Collapsible Section: Secondary Details -->
-      <button type="button" class="collapsible-trigger" id="btnMore">
+      <button type="button" class="collapsible-trigger" id="btnMore" aria-expanded="false" aria-controls="moreContent">
         &#9660; More details
       </button>
 
@@ -240,7 +973,7 @@
         <div class="modal-header">
           <span class="modal-title">Today's Entries</span>
           <span id="historyTotal" style="font-size:0.8rem;color:var(--text-muted);margin-left:auto;margin-right:12px;"></span>
-          <button type="button" class="btn-close" id="btnCloseHistory">&times;</button>
+          <button type="button" class="btn-close" id="btnCloseHistory" aria-label="Close today's entries dialog">&times;</button>
         </div>
         <div class="entries-list" id="historyList"></div>
       </div>
@@ -251,7 +984,7 @@
       <div class="modal-box">
         <div class="modal-header">
           <span class="modal-title">Settings & Devices</span>
-          <button type="button" class="btn-close" id="btnCloseSettings">&times;</button>
+          <button type="button" class="btn-close" id="btnCloseSettings" aria-label="Close settings dialog">&times;</button>
         </div>
 
         <form id="formSettings">
@@ -308,13 +1041,1511 @@
   </div>
 
   <!-- Inlined or referenced scripts -->
-  <script><?!= typeof include === 'function' ? include('server/timeUtils.js') : '' ?></script>
-  <script><?!= typeof include === 'function' ? include('client/clockSync.js') : '' ?></script>
-  <script><?!= typeof include === 'function' ? include('client/autocomplete.js') : '' ?></script>
-  <script><?!= typeof include === 'function' ? include('client/app.js') : '' ?></script>
-  <script src="../server/timeUtils.js"></script>
-  <script src="clockSync.js"></script>
-  <script src="autocomplete.js"></script>
-  <script src="app.js"></script>
+  <script>
+/**
+ * Daily Task Logger — Time & Serial Conversion Utilities
+ * Handles Google Sheets date serials and day fractions.
+ * 
+ * Google Sheets epoch starts on December 30, 1899.
+ * 9/1/2026 gives 46266
+ * 9:11:00 AM gives 551/1440 (0.3826388888888889)
+ */
+
+(function(root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.TimeUtils = factory();
+  }
+}(typeof self !== 'undefined' ? self : this, function() {
+  'use strict';
+
+  // Base epoch for Google Sheets: Dec 30, 1899 UTC
+  var GS_EPOCH_MS = Date.UTC(1899, 11, 30);
+  var MS_PER_DAY = 86400000;
+  var MIN_PER_DAY = 1440;
+
+  /**
+   * Parse a date string (YYYY-MM-DD or M/D/YYYY) into { year, month, day }
+   */
+  function parseDateParts(dateStr) {
+    if (!dateStr) return null;
+    var parts;
+    if (dateStr.indexOf('-') > -1) {
+      // YYYY-MM-DD
+      parts = dateStr.split('-');
+      return {
+        year: parseInt(parts[0], 10),
+        month: parseInt(parts[1], 10),
+        day: parseInt(parts[2], 10)
+      };
+    } else if (dateStr.indexOf('/') > -1) {
+      // M/D/YYYY
+      parts = dateStr.split('/');
+      return {
+        month: parseInt(parts[0], 10),
+        day: parseInt(parts[1], 10),
+        year: parseInt(parts[2], 10)
+      };
+    }
+    return null;
+  }
+
+  /**
+   * Parse time string "HH:mm" or "HH:mm:ss" or "h:mm:ss AM/PM" into { hours, minutes, seconds }
+   */
+  function parseTimeParts(timeStr) {
+    if (!timeStr) return null;
+    var str = timeStr.trim();
+    var isPM = /pm$/i.test(str);
+    var isAM = /am$/i.test(str);
+    var clean = str.replace(/\s*(am|pm)$/i, '');
+    var parts = clean.split(':');
+    var hours = parseInt(parts[0], 10);
+    var minutes = parseInt(parts[1], 10);
+    var seconds = parts.length > 2 ? parseInt(parts[2], 10) : 0;
+
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+
+    return {
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds
+    };
+  }
+
+  /**
+   * Convert date string or Date object to Google Sheets serial number.
+   * e.g. "2026-09-01" or "9/1/2026" -> 46266
+   */
+  function dateToSerial(dateInput, timeZone) {
+    if (!dateInput) return null;
+    var year, month, day;
+
+    if (typeof dateInput === 'string') {
+      var parsed = parseDateParts(dateInput);
+      if (parsed) {
+        year = parsed.year;
+        month = parsed.month;
+        day = parsed.day;
+      }
+    } else if (dateInput instanceof Date) {
+      if (timeZone) {
+        // Use Intl to format in given timezone
+        var formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timeZone,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric'
+        });
+        var formatted = formatter.format(dateInput); // M/D/YYYY
+        var p = parseDateParts(formatted);
+        year = p.year;
+        month = p.month;
+        day = p.day;
+      } else {
+        year = dateInput.getFullYear();
+        month = dateInput.getMonth() + 1;
+        day = dateInput.getDate();
+      }
+    }
+
+    if (year === undefined || month === undefined || day === undefined) {
+      return null;
+    }
+
+    var targetUtc = Date.UTC(year, month - 1, day);
+    var diffDays = Math.round((targetUtc - GS_EPOCH_MS) / MS_PER_DAY);
+    return diffDays;
+  }
+
+  /**
+   * Convert time string "HH:mm" / "HH:mm:ss" or Date object to day fraction.
+   * e.g. "09:11:00" -> 551 / 1440 = 0.3826388888888889
+   */
+  function timeToFraction(timeInput, timeZone) {
+    if (timeInput === null || timeInput === undefined || timeInput === '') return null;
+    var hours, minutes, seconds;
+
+    if (typeof timeInput === 'string') {
+      var p = parseTimeParts(timeInput);
+      if (!p) return null;
+      hours = p.hours;
+      minutes = p.minutes;
+      seconds = p.seconds;
+    } else if (timeInput instanceof Date) {
+      if (timeZone) {
+        var formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timeZone,
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          hour12: false
+        });
+        var parts = formatter.formatToParts(timeInput);
+        var map = {};
+        for (var i = 0; i < parts.length; i++) {
+          map[parts[i].type] = parts[i].value;
+        }
+        hours = parseInt(map.hour, 10);
+        minutes = parseInt(map.minute, 10);
+        seconds = parseInt(map.second || '0', 10);
+      } else {
+        hours = timeInput.getHours();
+        minutes = timeInput.getMinutes();
+        seconds = timeInput.getSeconds();
+      }
+    }
+
+    if (hours === undefined || minutes === undefined) return null;
+
+    // Per Rule 10: Seconds are written as :00 to match existing rows
+    var totalSeconds = (hours * 3600) + (minutes * 60);
+    return totalSeconds / 86400;
+  }
+
+  /**
+   * Convert serial number to M/D/YYYY string
+   */
+  function serialToDateStr(serial) {
+    if (typeof serial !== 'number' || isNaN(serial)) return '';
+    var utcMs = GS_EPOCH_MS + (serial * MS_PER_DAY);
+    var d = new Date(utcMs);
+    return (d.getUTCMonth() + 1) + '/' + d.getUTCDate() + '/' + d.getUTCFullYear();
+  }
+
+  /**
+   * Convert fraction to h:mm:ss AM/PM or HH:mm string
+   */
+  function fractionToTimeStr(fraction, is12Hour) {
+    if (typeof fraction !== 'number' || isNaN(fraction)) return '';
+    var totalSeconds = Math.round(fraction * 86400);
+    var hours = Math.floor(totalSeconds / 3600) % 24;
+    var minutes = Math.floor((totalSeconds % 3600) / 60);
+    var seconds = totalSeconds % 60;
+
+    if (is12Hour) {
+      var period = hours >= 12 ? 'PM' : 'AM';
+      var h12 = hours % 12 || 12;
+      var padM = minutes < 10 ? '0' + minutes : minutes;
+      var padS = seconds < 10 ? '0' + seconds : seconds;
+      return h12 + ':' + padM + ':' + padS + ' ' + period;
+    } else {
+      var padH = hours < 10 ? '0' + hours : hours;
+      var padMin = minutes < 10 ? '0' + minutes : minutes;
+      return padH + ':' + padMin;
+    }
+  }
+
+  /**
+   * Format a Date into YYYY-MM-DD for HTML input[type="date"]
+   */
+  function formatDateForInput(date, timeZone) {
+    if (!date) return '';
+    if (timeZone) {
+      var formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return formatter.format(date); // en-CA gives YYYY-MM-DD
+    }
+    var y = date.getFullYear();
+    var m = (date.getMonth() + 1).toString().padStart(2, '0');
+    var d = date.getDate().toString().padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  /**
+   * Format a Date into HH:mm for HTML input[type="time"]
+   */
+  function formatTimeForInput(date, timeZone) {
+    if (!date) return '';
+    if (timeZone) {
+      var formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: timeZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      return formatter.format(date); // en-GB gives HH:mm
+    }
+    var h = date.getHours().toString().padStart(2, '0');
+    var m = date.getMinutes().toString().padStart(2, '0');
+    return h + ':' + m;
+  }
+
+  return {
+    dateToSerial: dateToSerial,
+    timeToFraction: timeToFraction,
+    serialToDateStr: serialToDateStr,
+    fractionToTimeStr: fractionToTimeStr,
+    parseDateParts: parseDateParts,
+    parseTimeParts: parseTimeParts,
+    formatDateForInput: formatDateForInput,
+    formatTimeForInput: formatTimeForInput,
+    MS_PER_DAY: MS_PER_DAY,
+    MIN_PER_DAY: MIN_PER_DAY
+  };
+}));
+
+  </script>
+  <script>
+/**
+ * Daily Task Logger — Client Clock Synchronization Module
+ * Synchronizes client UI time with server clock of record (Asia/Jakarta)
+ * Implements PRD Section 2.5 Rule 2:
+ * offset = serverNow + roundTrip / 2 - clientReceiveTime
+ * Every "now" in UI = Date.now() + offset
+ * Re-sync every 5 minutes and on tab focus
+ */
+
+(function(root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.ClockSync = factory();
+  }
+}(typeof self !== 'undefined' ? self : this, function() {
+  'use strict';
+
+  var clockOffset = 0;
+  var isSynced = false;
+  var lastSyncTime = 0;
+  var SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+  /**
+   * Calculate clock offset using NTP-style round-trip time
+   */
+  function calculateOffset(clientSendTime, serverNowMs, clientReceiveTime) {
+    var roundTrip = clientReceiveTime - clientSendTime;
+    return Math.round(serverNowMs + (roundTrip / 2) - clientReceiveTime);
+  }
+
+  /**
+   * Get current synchronized timestamp (epoch ms)
+   */
+  function now() {
+    return Date.now() + clockOffset;
+  }
+
+  /**
+   * Get current synchronized Date object
+   */
+  function nowDate() {
+    return new Date(now());
+  }
+
+  /**
+   * Perform clock sync with backend serverTime()
+   * @param {Function} fetchServerTimeFn - Function returning promise or calling google.script.run
+   * @returns {Promise<number>} Resolves with calculated offset
+   */
+  function sync(fetchServerTimeFn) {
+    var sendTime = Date.now();
+
+    return new Promise(function(resolve, reject) {
+      if (!fetchServerTimeFn) {
+        // Fallback to local clock if no sync function provided
+        isSynced = true;
+        resolve(clockOffset);
+        return;
+      }
+
+      fetchServerTimeFn(function(serverData) {
+        var receiveTime = Date.now();
+        if (serverData && typeof serverData.serverNowMs === 'number') {
+          clockOffset = calculateOffset(sendTime, serverData.serverNowMs, receiveTime);
+          isSynced = true;
+          lastSyncTime = receiveTime;
+          resolve(clockOffset);
+        } else {
+          resolve(clockOffset);
+        }
+      }, function(err) {
+        // Network fail — keep existing offset
+        resolve(clockOffset);
+      });
+    });
+  }
+
+  /**
+   * Sets up periodic re-sync every 5 minutes and on window focus/tab visibility
+   */
+  function initAutoSync(fetchServerTimeFn) {
+    // Initial sync
+    sync(fetchServerTimeFn);
+
+    // Sync on window focus / visibility change
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', function() {
+        if (Date.now() - lastSyncTime > 30000) { // throttle to 30s
+          sync(fetchServerTimeFn);
+        }
+      });
+
+      if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', function() {
+          if (!document.hidden && (Date.now() - lastSyncTime > 30000)) {
+            sync(fetchServerTimeFn);
+          }
+        });
+      }
+
+      // Interval sync every 5 minutes
+      setInterval(function() {
+        sync(fetchServerTimeFn);
+      }, SYNC_INTERVAL_MS);
+    }
+  }
+
+  return {
+    calculateOffset: calculateOffset,
+    sync: sync,
+    now: now,
+    nowDate: nowDate,
+    getOffset: function() { return clockOffset; },
+    setOffset: function(off) { clockOffset = off; isSynced = true; },
+    isSynced: function() { return isSynced; },
+    initAutoSync: initAutoSync
+  };
+}));
+
+  </script>
+  <script>
+/**
+ * Daily Task Logger — Hostname Autocomplete & Fuzzy Matching
+ * Matches user input against cached device inventory and past entries.
+ * e.g., typing "tomang" matches "SW1_KCP JAKARTA TOMANG"
+ */
+
+(function(root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.Autocomplete = factory();
+  }
+}(typeof self !== 'undefined' ? self : this, function() {
+  'use strict';
+
+  /**
+   * Simple score-based fuzzy match
+   * @param {string} query 
+   * @param {string} target 
+   * @returns {number|null} Score (higher is better) or null if no match
+   */
+  function scoreMatch(query, target) {
+    var q = query.trim().toLowerCase();
+    var t = target.trim().toLowerCase();
+
+    if (!q) return 1;
+    if (t === q) return 1000;
+
+    // Exact prefix match
+    if (t.indexOf(q) === 0) return 500 - (t.length - q.length);
+
+    // Exact substring match
+    var subIdx = t.indexOf(q);
+    if (subIdx > -1) return 300 - subIdx;
+
+    // Word token match
+    var words = t.split(/[\s_\-\.]+/);
+    for (var w = 0; w < words.length; w++) {
+      if (words[w].indexOf(q) === 0) return 250;
+    }
+
+    // Fuzzy subsequence match
+    var qIdx = 0;
+    var consecutive = 0;
+    var score = 0;
+
+    for (var i = 0; i < t.length && qIdx < q.length; i++) {
+      if (t[i] === q[qIdx]) {
+        score += 10 + (consecutive * 5);
+        consecutive++;
+        qIdx++;
+      } else {
+        consecutive = 0;
+      }
+    }
+
+    if (qIdx === q.length) {
+      return score - (t.length - q.length);
+    }
+
+    return null;
+  }
+
+  /**
+   * Filter and sort device suggestions
+   * @param {string} query
+   * @param {Array<string>} deviceList
+   * @param {number} maxResults
+   * @returns {Array<{ hostname: string, score: number, isExact: boolean }>}
+   */
+  function search(query, deviceList, maxResults) {
+    maxResults = maxResults || 8;
+    if (!deviceList || deviceList.length === 0) return [];
+    var q = (query || '').trim();
+    if (!q) return deviceList.slice(0, maxResults).map(function(d) {
+      return { hostname: d, score: 0, isExact: false };
+    });
+
+    var results = [];
+    var qUpper = q.toUpperCase();
+
+    for (var i = 0; i < deviceList.length; i++) {
+      var d = deviceList[i];
+      var score = scoreMatch(q, d);
+      if (score !== null) {
+        results.push({
+          hostname: d,
+          score: score,
+          isExact: d.toUpperCase() === qUpper
+        });
+      }
+    }
+
+    // Sort descending by score
+    results.sort(function(a, b) {
+      return b.score - a.score;
+    });
+
+    return results.slice(0, maxResults);
+  }
+
+  return {
+    scoreMatch: scoreMatch,
+    search: search
+  };
+}));
+
+  </script>
+  <script>
+/**
+ * Daily Task Logger — Client Application Controller
+ * Handles UI interactions, auto/manual time tracking, offline queue,
+ * sticky defaults, undo window, and backend synchronization.
+ */
+
+(function(window, document) {
+  'use strict';
+
+  // --- State ---
+  var state = {
+    // Time tracking
+    dateAuto: true,
+    startAuto: true,
+    endAuto: true,
+    timerActive: false,
+    timerStartTime: null,
+
+    // Backend config & cache
+    dropdownOptions: {},
+    presets: [],
+    devices: [],
+    typicalDurations: {},
+    settings: {
+      engineer: '',
+      timeZone: 'Asia/Jakarta',
+      fallbackDuration: 5,
+      disableUppercaseHostname: false,
+      darkMode: false
+    },
+
+    // Offline & Undo
+    offlineQueue: [],
+    lastSavedEntry: null,
+    undoTimeoutId: null,
+
+    // Weekday counts
+    weekdayCounts: { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 }
+  };
+
+  // --- DOM Elements ---
+  var el = {};
+
+  // HTML sanitization helper to prevent Stored XSS (CWE-79)
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function initElements() {
+    el.currentClock = document.getElementById('currentClock');
+    el.statusBanner = document.getElementById('statusBanner');
+    el.statusBannerText = document.getElementById('statusBannerText');
+    el.presetsContainer = document.getElementById('presetsContainer');
+    el.weekdayStrip = document.getElementById('weekdayStrip');
+
+    // Form inputs
+    el.inputTanggal = document.getElementById('inputTanggal');
+    el.badgeTanggal = document.getElementById('badgeTanggal');
+    el.btnResetTanggal = document.getElementById('btnResetTanggal');
+
+    el.inputTask = document.getElementById('inputTask');
+    el.inputAction = document.getElementById('inputAction');
+
+    el.radioCategory = document.getElementsByName('category');
+    el.selectProjectCategory = document.getElementById('selectProjectCategory');
+    el.selectSeverity = document.getElementById('selectSeverity');
+
+    el.inputHostname = document.getElementById('inputHostname');
+    el.hostnameList = document.getElementById('hostnameList');
+    el.newDeviceNotice = document.getElementById('newDeviceNotice');
+
+    el.selectStatus = document.getElementById('selectStatus');
+    el.selectRequestBy = document.getElementById('selectRequestBy');
+
+    el.inputStart = document.getElementById('inputStart');
+    el.badgeStart = document.getElementById('badgeStart');
+    el.btnResetStart = document.getElementById('btnResetStart');
+
+    el.inputEnd = document.getElementById('inputEnd');
+    el.badgeEnd = document.getElementById('badgeEnd');
+    el.btnResetEnd = document.getElementById('btnResetEnd');
+
+    el.timerBtn = document.getElementById('timerBtn');
+    el.chipsContainer = document.getElementById('chipsContainer');
+
+    el.selectEngineer = document.getElementById('selectEngineer');
+    el.inputRemark = document.getElementById('inputRemark');
+
+    // Controls & Buttons
+    el.btnMore = document.getElementById('btnMore');
+    el.moreContent = document.getElementById('moreContent');
+    el.btnSave = document.getElementById('btnSave');
+    el.btnSettings = document.getElementById('btnSettings');
+    el.btnHistory = document.getElementById('btnHistory');
+    el.btnThemeToggle = document.getElementById('btnThemeToggle');
+
+    // Toast & Modals
+    el.toastContainer = document.getElementById('toastContainer');
+    el.settingsModal = document.getElementById('settingsModal');
+    el.historyModal = document.getElementById('historyModal');
+    el.historyList = document.getElementById('historyList');
+    el.historyTotal = document.getElementById('historyTotal');
+    el.btnCloseSettings = document.getElementById('btnCloseSettings');
+    el.btnCloseHistory = document.getElementById('btnCloseHistory');
+    el.formSettings = document.getElementById('formSettings');
+    el.csvFileInput = document.getElementById('csvFileInput');
+    el.csvTextarea = document.getElementById('csvTextarea');
+    el.btnImportCsv = document.getElementById('btnImportCsv');
+    el.csvImportResult = document.getElementById('csvImportResult');
+  }
+
+  // --- UUID Generator ---
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0;
+      var v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // --- Backend Wrapper (Supports google.script.run and Local Mock) ---
+  function callBackend(methodName, args, onSuccess, onFailure) {
+    if (window.google && window.google.script && window.google.script.run) {
+      var runner = window.google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure || function(err) {
+          showToast('Server error: ' + (err.message || err), 'error');
+        });
+      if (args !== undefined && args !== null) {
+        runner[methodName](args);
+      } else {
+        runner[methodName]();
+      }
+    } else if (window.__MOCK_BACKEND__) {
+      // Local development mock server
+      window.__MOCK_BACKEND__[methodName](args)
+        .then(onSuccess)
+        .catch(onFailure || function(err) {
+          showToast('Mock server error: ' + (err.message || err), 'error');
+        });
+    } else {
+      // Offline fallback
+      setTimeout(function() {
+        if (onFailure) onFailure(new Error('Backend unavailable (Offline)'));
+      }, 50);
+    }
+  }
+
+  // --- Clock & Time Engine ---
+  function updateClockDisplay() {
+    var d = ClockSync.nowDate();
+    var h = d.getHours();
+    var m = d.getMinutes();
+    var s = d.getSeconds();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12 || 12;
+    var padM = m < 10 ? '0' + m : m;
+    var padS = s < 10 ? '0' + s : s;
+    el.currentClock.textContent = h12 + ':' + padM + ':' + padS + ' ' + ampm;
+
+    // Track Auto fields
+    if (state.dateAuto) {
+      el.inputTanggal.value = TimeUtils.formatDateForInput(d, state.settings.timeZone);
+    }
+
+    if (state.endAuto) {
+      el.inputEnd.value = TimeUtils.formatTimeForInput(d, state.settings.timeZone);
+    }
+
+    if (state.startAuto) {
+      updateCalculatedStartTime();
+    }
+  }
+
+  function getTypicalDuration() {
+    var task = (el.inputTask.value || '').trim().toLowerCase();
+    var action = (el.inputAction.value || '').trim().toLowerCase();
+    var key = task + '|||' + action;
+
+    if (state.typicalDurations && state.typicalDurations[key]) {
+      return state.typicalDurations[key];
+    }
+    return state.settings.fallbackDuration || 5;
+  }
+
+  function updateCalculatedStartTime() {
+    var endStr = el.inputEnd.value;
+    if (!endStr) return;
+
+    var parts = endStr.split(':');
+    var endMin = (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+    var duration = getTypicalDuration();
+
+    var startMin = endMin - duration;
+    if (startMin < 0) startMin += 1440; // wrap around previous day
+
+    var h = Math.floor(startMin / 60) % 24;
+    var m = startMin % 60;
+    var padH = h < 10 ? '0' + h : h;
+    var padM = m < 10 ? '0' + m : m;
+
+    el.inputStart.value = padH + ':' + padM;
+  }
+
+  function updateBadges() {
+    // Date badge
+    if (state.dateAuto) {
+      el.badgeTanggal.textContent = 'Auto';
+      el.badgeTanggal.className = 'badge badge-auto';
+      el.btnResetTanggal.style.display = 'none';
+    } else {
+      el.badgeTanggal.textContent = 'Manual';
+      el.badgeTanggal.className = 'badge badge-manual';
+      el.btnResetTanggal.style.display = 'inline-flex';
+    }
+
+    // Start badge
+    if (state.startAuto) {
+      el.badgeStart.textContent = 'Auto';
+      el.badgeStart.className = 'badge badge-auto';
+      el.btnResetStart.style.display = 'none';
+    } else {
+      el.badgeStart.textContent = 'Manual';
+      el.badgeStart.className = 'badge badge-manual';
+      el.btnResetStart.style.display = 'inline-flex';
+    }
+
+    // End badge
+    if (state.endAuto) {
+      el.badgeEnd.textContent = 'Auto';
+      el.badgeEnd.className = 'badge badge-auto';
+      el.btnResetEnd.style.display = 'none';
+    } else {
+      el.badgeEnd.textContent = 'Manual';
+      el.badgeEnd.className = 'badge badge-manual';
+      el.btnResetEnd.style.display = 'inline-flex';
+    }
+  }
+
+  // --- Duration Chips ---
+  function applyDurationChip(minutes) {
+    var endStr = el.inputEnd.value;
+    if (!endStr) {
+      endStr = TimeUtils.formatTimeForInput(ClockSync.nowDate(), state.settings.timeZone);
+      el.inputEnd.value = endStr;
+    }
+
+    var parts = endStr.split(':');
+    var endMin = (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+    var startMin = endMin - minutes;
+    if (startMin < 0) startMin += 1440;
+
+    var h = Math.floor(startMin / 60) % 24;
+    var m = startMin % 60;
+    el.inputStart.value = (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+
+    // Switching start to manual per Rule 4
+    state.startAuto = false;
+    updateBadges();
+  }
+
+  // --- Timer Mode (Rule 5 & FR-05) ---
+  function toggleTimer() {
+    if (!state.timerActive) {
+      // Start task timer
+      state.timerActive = true;
+      var nowD = ClockSync.nowDate();
+      state.timerStartTime = TimeUtils.formatTimeForInput(nowD, state.settings.timeZone);
+      el.inputStart.value = state.timerStartTime;
+      state.startAuto = false;
+
+      // Persist in localStorage so it survives page reload
+      localStorage.setItem('task_timer_start', state.timerStartTime);
+
+      el.timerBtn.classList.add('active');
+      el.timerBtn.innerHTML = '&#9632; Finish';
+      updateBadges();
+      showToast('Task timer started at ' + state.timerStartTime, 'info');
+    } else {
+      // Finish task timer
+      state.timerActive = false;
+      localStorage.removeItem('task_timer_start');
+
+      var nowD2 = ClockSync.nowDate();
+      el.inputEnd.value = TimeUtils.formatTimeForInput(nowD2, state.settings.timeZone);
+      state.endAuto = false;
+
+      el.timerBtn.classList.remove('active');
+      el.timerBtn.innerHTML = '&#9654; Timer';
+      updateBadges();
+      showToast('Task timer finished', 'info');
+    }
+  }
+
+  function restoreTimerIfActive() {
+    var savedStart = localStorage.getItem('task_timer_start');
+    if (savedStart) {
+      state.timerActive = true;
+      state.timerStartTime = savedStart;
+      el.inputStart.value = savedStart;
+      state.startAuto = false;
+      el.timerBtn.classList.add('active');
+      el.timerBtn.innerHTML = '&#9632; Finish';
+      updateBadges();
+    }
+  }
+
+  // --- Autocomplete ---
+  var activeAutocompleteIdx = -1;
+
+  function initHostnameAutocomplete() {
+    el.inputHostname.addEventListener('input', function() {
+      var val = this.value;
+      activeAutocompleteIdx = -1;
+      if (!val) {
+        el.hostnameList.classList.remove('visible');
+        el.newDeviceNotice.style.display = 'none';
+        return;
+      }
+
+      var matches = Autocomplete.search(val, state.devices, 6);
+      renderAutocompleteList(matches, val);
+    });
+
+    el.inputHostname.addEventListener('keydown', function(e) {
+      var items = el.hostnameList.querySelectorAll('.autocomplete-item');
+      if (!items || items.length === 0 || !el.hostnameList.classList.contains('visible')) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeAutocompleteIdx = (activeAutocompleteIdx + 1) % items.length;
+        updateActiveAutocompleteItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeAutocompleteIdx = (activeAutocompleteIdx - 1 + items.length) % items.length;
+        updateActiveAutocompleteItem(items);
+      } else if (e.key === 'Enter' && activeAutocompleteIdx > -1) {
+        e.preventDefault();
+        items[activeAutocompleteIdx].click();
+      } else if (e.key === 'Escape') {
+        el.hostnameList.classList.remove('visible');
+      }
+    });
+
+    el.inputHostname.addEventListener('focus', function() {
+      if (this.value) {
+        var matches = Autocomplete.search(this.value, state.devices, 6);
+        renderAutocompleteList(matches, this.value);
+      }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!el.inputHostname.contains(e.target) && !el.hostnameList.contains(e.target)) {
+        el.hostnameList.classList.remove('visible');
+      }
+    });
+  }
+
+  function updateActiveAutocompleteItem(items) {
+    for (var i = 0; i < items.length; i++) {
+      if (i === activeAutocompleteIdx) {
+        items[i].classList.add('active');
+        items[i].scrollIntoView({ block: 'nearest' });
+      } else {
+        items[i].classList.remove('active');
+      }
+    }
+  }
+
+  function renderAutocompleteList(matches, query) {
+    el.hostnameList.innerHTML = '';
+    activeAutocompleteIdx = -1;
+    var isKnown = false;
+    var queryUpper = query.trim().toUpperCase();
+
+    for (var i = 0; i < matches.length; i++) {
+      var m = matches[i];
+      if (m.hostname.toUpperCase() === queryUpper) isKnown = true;
+
+      var item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.setAttribute('role', 'option');
+      item.textContent = m.hostname;
+      item.addEventListener('click', (function(host) {
+        return function() {
+          el.inputHostname.value = host;
+          el.hostnameList.classList.remove('visible');
+          el.newDeviceNotice.style.display = 'none';
+        };
+      })(m.hostname));
+
+      el.hostnameList.appendChild(item);
+    }
+
+    if (matches.length > 0) {
+      el.hostnameList.classList.add('visible');
+    } else {
+      el.hostnameList.classList.remove('visible');
+    }
+
+    // New device notice if not found
+    if (!isKnown && query.length > 2) {
+      el.newDeviceNotice.style.display = 'block';
+    } else {
+      el.newDeviceNotice.style.display = 'none';
+    }
+  }
+
+  // --- Presets ---
+  function renderPresets(presets) {
+    el.presetsContainer.innerHTML = '';
+    presets.forEach(function(p) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'preset-chip';
+      chip.textContent = p.label;
+      chip.addEventListener('click', function() {
+        el.inputTask.value = p.task;
+        el.inputAction.value = p.action;
+        if (p.category) setCategoryRadio(p.category);
+        if (p.projectCategory) el.selectProjectCategory.value = p.projectCategory;
+        if (p.severity) el.selectSeverity.value = p.severity;
+
+        if (state.startAuto) {
+          updateCalculatedStartTime();
+        }
+      });
+      el.presetsContainer.appendChild(chip);
+    });
+  }
+
+  function setCategoryRadio(val) {
+    for (var i = 0; i < el.radioCategory.length; i++) {
+      if (el.radioCategory[i].value === val) {
+        el.radioCategory[i].checked = true;
+        break;
+      }
+    }
+  }
+
+  function getSelectedCategory() {
+    for (var i = 0; i < el.radioCategory.length; i++) {
+      if (el.radioCategory[i].checked) return el.radioCategory[i].value;
+    }
+    return 'SUPPORT';
+  }
+
+  // --- Populate Dropdown Options ---
+  function populateSelects(options) {
+    function fillSelect(selectEl, list, defaultVal) {
+      if (!selectEl) return;
+      var current = selectEl.value;
+      selectEl.innerHTML = '';
+      (list || []).forEach(function(item) {
+        var opt = document.createElement('option');
+        opt.value = item;
+        opt.textContent = item;
+        selectEl.appendChild(opt);
+      });
+      if (current && list.indexOf(current) > -1) {
+        selectEl.value = current;
+      } else if (defaultVal && list.indexOf(defaultVal) > -1) {
+        selectEl.value = defaultVal;
+      }
+    }
+
+    fillSelect(el.selectProjectCategory, options.projectCategory, 'KANTOR CABANG');
+    fillSelect(el.selectSeverity, options.severity, 'Minor');
+    fillSelect(el.selectStatus, options.status, 'CLOSED');
+    fillSelect(el.selectRequestBy, options.requestBy, 'Desktop');
+    fillSelect(el.selectEngineer, options.engineer, state.settings.engineer);
+  }
+
+  // --- Weekday Coverage Strip (FR-12 & S4-3) ---
+  function updateWeekdayStrip(entries) {
+    var counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
+    var todayD = ClockSync.nowDate();
+    var currentDayIdx = todayD.getDay(); // 0 is Sun, 1 is Mon...
+
+    var daysMap = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', ''];
+    var todayKey = daysMap[currentDayIdx] || '';
+
+    // Count entries
+    (entries || []).forEach(function(r) {
+      var dParts = TimeUtils.parseDateParts(r.tanggal);
+      if (dParts) {
+        var d = new Date(dParts.year, dParts.month - 1, dParts.day);
+        var dayName = daysMap[d.getDay()];
+        if (dayName && counts[dayName] !== undefined) {
+          counts[dayName]++;
+        }
+      }
+    });
+
+    var keys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    var html = '';
+    keys.forEach(function(k, idx) {
+      var c = counts[k];
+      var isToday = k === todayKey;
+      var isPast = (idx + 1) < currentDayIdx;
+      var countClass = 'weekday-count';
+
+      if (c > 0) countClass += ' has-entries';
+      if (isToday) countClass += ' today';
+      if (isPast && c === 0) countClass += ' missed';
+
+      html += '<div class="weekday-col">' +
+        '<span class="weekday-name">' + k + '</span>' +
+        '<div class="' + countClass + '">' + c + '</div>' +
+        '</div>';
+    });
+
+    el.weekdayStrip.innerHTML = html;
+  }
+
+  // --- Save Workflow ---
+  function handleSave() {
+    // 1. Re-stamp any field still in AUTO at this instant (Rule 6)
+    var currentNow = ClockSync.nowDate();
+
+    if (state.dateAuto) {
+      el.inputTanggal.value = TimeUtils.formatDateForInput(currentNow, state.settings.timeZone);
+    }
+    if (state.endAuto) {
+      el.inputEnd.value = TimeUtils.formatTimeForInput(currentNow, state.settings.timeZone);
+    }
+    if (state.startAuto) {
+      updateCalculatedStartTime();
+    }
+
+    // 2. Validate client-side
+    var tanggal = el.inputTanggal.value;
+    var task = (el.inputTask.value || '').trim();
+    var action = (el.inputAction.value || '').trim();
+    var category = getSelectedCategory();
+    var projectCategory = el.selectProjectCategory.value;
+    var severity = el.selectSeverity.value;
+    var hostname = (el.inputHostname.value || '').trim();
+    var status = el.selectStatus.value;
+    var requestBy = el.selectRequestBy.value;
+    var timeStart = el.inputStart.value;
+    var timeEnd = el.inputEnd.value;
+    var engineer = el.selectEngineer.value;
+    var remark = (el.inputRemark.value || '').trim();
+
+    if (!task || !action || !hostname || !timeStart || !timeEnd) {
+      showToast('Please fill all required fields.', 'warning');
+      return;
+    }
+
+    // Uppercase hostname
+    if (!state.settings.disableUppercaseHostname) {
+      hostname = hostname.toUpperCase();
+    }
+
+    // Check time logic (End >= Start or midnight crossing prompt)
+    var startMin = parseTimeToMin(timeStart);
+    var endMin = parseTimeToMin(timeEnd);
+    var isNextDay = false;
+
+    if (endMin < startMin) {
+      var confirmNextDay = window.confirm('End time (' + timeEnd + ') is earlier than Start time (' + timeStart + '). Does this task end on the next day?');
+      if (confirmNextDay) {
+        isNextDay = true;
+      } else {
+        showToast('Please adjust Start or End time.', 'warning');
+        return;
+      }
+    }
+
+    var durationMin = endMin - startMin + (isNextDay ? 1440 : 0);
+    var confirmLong = false;
+    if (durationMin > 720) {
+      confirmLong = window.confirm('Task duration is over 12 hours (' + Math.round(durationMin / 60) + 'h). Proceed?');
+      if (!confirmLong) return;
+    }
+
+    var payload = {
+      uuid: generateUUID(),
+      tanggal: tanggal,
+      task: task,
+      action: action,
+      category: category,
+      projectCategory: projectCategory,
+      severity: severity,
+      hostname: hostname,
+      status: status,
+      requestBy: requestBy,
+      timeStart: timeStart,
+      timeEnd: timeEnd,
+      engineer: engineer,
+      remark: remark,
+      isNextDay: isNextDay,
+      confirmLongDuration: confirmLong,
+      timeZone: state.settings.timeZone
+    };
+
+    // UI Feedback
+    el.btnSave.disabled = true;
+    el.btnSave.innerHTML = '<span class="pulse-dot"></span> Saving...';
+
+    callBackend('saveEntry', payload, function(res) {
+      el.btnSave.disabled = false;
+      el.btnSave.innerHTML = 'Save Task';
+
+      if (res && res.success) {
+        showSaveSuccess(res.rowNumber, payload);
+        applyStickyDefaults();
+      } else {
+        var errMsg = res ? res.error : 'Unknown save error';
+        showToast(errMsg, 'error');
+      }
+    }, function(err) {
+      // Offline / Network Failure: Queue locally (FR-11 & S4-2)
+      el.btnSave.disabled = false;
+      el.btnSave.innerHTML = 'Save Task';
+      enqueueOfflineSave(payload);
+      applyStickyDefaults();
+      showToast('Saved offline to queue (Pending). Will sync automatically.', 'info');
+    });
+  }
+
+  function parseTimeToMin(t) {
+    var p = t.split(':');
+    return (parseInt(p[0], 10) * 60) + parseInt(p[1], 10);
+  }
+
+  // --- Sticky Defaults & Next Entry (FR-06 & S3-1) ---
+  function applyStickyDefaults() {
+    // Keep Category, Project Category, Severity, Status, Request by, Engineer
+    // Blank Hostname and Remark
+    el.inputHostname.value = '';
+    el.inputRemark.value = '';
+    el.newDeviceNotice.style.display = 'none';
+
+    // Reset times to Auto
+    state.startAuto = true;
+    state.endAuto = true;
+    state.dateAuto = true;
+    updateBadges();
+
+    // Recalculate start time based on typical duration
+    updateCalculatedStartTime();
+  }
+
+  // --- Offline Queue Engine (FR-11 & S4-2) ---
+  function loadOfflineQueue() {
+    try {
+      var q = localStorage.getItem('offline_task_queue');
+      state.offlineQueue = q ? JSON.parse(q) : [];
+      updateOfflineStatusBanner();
+    } catch (e) {
+      state.offlineQueue = [];
+    }
+  }
+
+  function enqueueOfflineSave(payload) {
+    state.offlineQueue.push(payload);
+    localStorage.setItem('offline_task_queue', JSON.stringify(state.offlineQueue));
+    updateOfflineStatusBanner();
+  }
+
+  function updateOfflineStatusBanner() {
+    var count = state.offlineQueue.length;
+    if (count > 0) {
+      el.statusBanner.classList.add('visible');
+      el.statusBannerText.textContent = 'Pending (' + count + ') — Syncing automatically...';
+    } else {
+      el.statusBanner.classList.remove('visible');
+    }
+  }
+
+  function flushOfflineQueue() {
+    if (state.offlineQueue.length === 0) return;
+
+    var queueCopy = state.offlineQueue.slice();
+    var processNext = function(index) {
+      if (index >= queueCopy.length) {
+        state.offlineQueue = [];
+        localStorage.removeItem('offline_task_queue');
+        updateOfflineStatusBanner();
+        showToast('All pending offline entries successfully synced to sheet!', 'info');
+        return;
+      }
+
+      var item = queueCopy[index];
+      callBackend('saveEntry', item, function(res) {
+        processNext(index + 1);
+      }, function(err) {
+        // Still failing, pause queue
+        state.offlineQueue = queueCopy.slice(index);
+        localStorage.setItem('offline_task_queue', JSON.stringify(state.offlineQueue));
+        updateOfflineStatusBanner();
+      });
+    };
+
+    processNext(0);
+  }
+
+  // --- Undo (30s) Toast (FR-10 & S3-5) ---
+  function showSaveSuccess(rowNumber, payload) {
+    state.lastSavedEntry = { rowNumber: rowNumber, entry: payload };
+
+    var msg = 'Saved to row ' + (rowNumber || '') + '!';
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<span>' + msg + '</span>' +
+      '<button class="btn-undo" id="btnUndoToast">Undo (30s)</button>';
+
+    el.toastContainer.innerHTML = '';
+    el.toastContainer.appendChild(toast);
+
+    var undoBtn = document.getElementById('btnUndoToast');
+    var secondsLeft = 30;
+
+    var timer = setInterval(function() {
+      secondsLeft--;
+      if (secondsLeft > 0) {
+        undoBtn.textContent = 'Undo (' + secondsLeft + 's)';
+      } else {
+        clearInterval(timer);
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+        state.lastSavedEntry = null;
+      }
+    }, 1000);
+
+    undoBtn.addEventListener('click', function() {
+      clearInterval(timer);
+      handleUndo(state.lastSavedEntry);
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    });
+  }
+
+  function handleUndo(savedInfo) {
+    if (!savedInfo) return;
+    showToast('Reversing last save...', 'info');
+
+    callBackend('undoLast', savedInfo, function(res) {
+      if (res && res.success) {
+        showToast('Row ' + savedInfo.rowNumber + ' removed successfully.', 'info');
+        // Restore entry details into form
+        el.inputTask.value = savedInfo.entry.task;
+        el.inputAction.value = savedInfo.entry.action;
+        el.inputHostname.value = savedInfo.entry.hostname;
+        el.inputRemark.value = savedInfo.entry.remark;
+      } else {
+        showToast(res ? res.reason || res.error : 'Undo failed.', 'error');
+      }
+    });
+  }
+
+  function showToast(message, type) {
+    type = type || 'info';
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+
+    el.toastContainer.innerHTML = '';
+    el.toastContainer.appendChild(toast);
+
+    setTimeout(function() {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 4500);
+  }
+
+  // --- History & Today's Feed Modal ---
+  function openHistoryModal() {
+    el.historyList.innerHTML = '<div style="text-align:center;padding:12px;">Loading today\'s entries...</div>';
+    el.historyModal.classList.add('visible');
+
+    callBackend('todayRows', null, function(res) {
+      if (res && res.success) {
+        el.historyTotal.textContent = res.count + ' tasks | ' + res.totalMinutes + ' mins';
+        if (res.rows.length === 0) {
+          el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
+          return;
+        }
+
+        var html = '';
+        res.rows.forEach(function(r) {
+          html += '<div class="entry-card">' +
+            '<div class="entry-card-header">' +
+            '<span>Row #' + escapeHtml(r.rowNumber) + '</span>' +
+            '<span>' + escapeHtml(r.timeStart) + ' - ' + escapeHtml(r.timeEnd) + ' (' + escapeHtml(r.durationMinutes) + 'm)</span>' +
+            '</div>' +
+            '<div class="entry-card-title">' + escapeHtml(r.task) + '</div>' +
+            '<div class="entry-card-meta">' + escapeHtml(r.action) + ' &bull; <strong>' + escapeHtml(r.hostname) + '</strong></div>' +
+            '</div>';
+        });
+        el.historyList.innerHTML = html;
+      }
+    });
+  }
+
+  // --- Settings & CSV Device Importer ---
+  function openSettingsModal() {
+    document.getElementById('settingEngineer').value = state.settings.engineer || '';
+    document.getElementById('settingTimezone').value = state.settings.timeZone || 'Asia/Jakarta';
+    document.getElementById('settingFallback').value = state.settings.fallbackDuration || 5;
+    document.getElementById('settingUppercase').checked = !state.settings.disableUppercaseHostname;
+    el.settingsModal.classList.add('visible');
+  }
+
+  function handleSaveSettings(e) {
+    e.preventDefault();
+    state.settings.engineer = document.getElementById('settingEngineer').value.trim();
+    state.settings.timeZone = document.getElementById('settingTimezone').value.trim() || 'Asia/Jakarta';
+    state.settings.fallbackDuration = parseInt(document.getElementById('settingFallback').value, 10) || 5;
+    state.settings.disableUppercaseHostname = !document.getElementById('settingUppercase').checked;
+
+    localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
+    callBackend('saveSettings', state.settings, function() {
+      showToast('Settings saved.', 'info');
+      el.settingsModal.classList.remove('visible');
+    });
+  }
+
+  function handleDeviceCsvImport() {
+    var text = el.csvTextarea.value.trim();
+    if (!text) {
+      showToast('Please paste CSV content or select a file.', 'warning');
+      return;
+    }
+
+    el.btnImportCsv.disabled = true;
+    el.btnImportCsv.textContent = 'Importing...';
+
+    callBackend('importDevices', text, function(res) {
+      el.btnImportCsv.disabled = false;
+      el.btnImportCsv.textContent = 'Import to Devices Tab';
+
+      if (res && res.success) {
+        el.csvImportResult.textContent = 'Added: ' + res.addedCount + ' new hostnames, Skipped duplicates: ' + res.skippedCount;
+        el.csvImportResult.style.color = 'var(--success)';
+        // Refresh devices list
+        loadInitialConfig();
+      } else {
+        el.csvImportResult.textContent = 'Error: ' + (res ? res.error : 'Import failed');
+        el.csvImportResult.style.color = 'var(--danger)';
+      }
+    });
+  }
+
+  // --- Initial Configuration Loader ---
+  function loadInitialConfig() {
+    // 1. Clock Sync
+    ClockSync.initAutoSync(function(onSuccess, onFailure) {
+      callBackend('serverTime', null, onSuccess, onFailure);
+    });
+
+    // 2. Fetch sheet metadata & validation
+    callBackend('getConfig', null, function(res) {
+      if (res && res.success) {
+        if (res.dropdownOptions) {
+          state.dropdownOptions = res.dropdownOptions;
+          populateSelects(res.dropdownOptions);
+        }
+        if (res.presets) {
+          state.presets = res.presets;
+          renderPresets(res.presets);
+        }
+        if (res.devices) {
+          state.devices = res.devices;
+          localStorage.setItem('cached_devices', JSON.stringify(res.devices));
+        }
+        if (res.typicalDurations) {
+          state.typicalDurations = res.typicalDurations;
+        }
+        if (res.settings) {
+          Object.assign(state.settings, res.settings);
+        }
+      }
+    });
+
+    // 3. Update today rows & weekday strip
+    callBackend('todayRows', null, function(res) {
+      if (res && res.success) {
+        updateWeekdayStrip(res.rows);
+      }
+    });
+  }
+
+  // --- App Initialization ---
+  function init() {
+    initElements();
+
+    // Load offline queue & settings from localStorage
+    loadOfflineQueue();
+    var cachedSettings = localStorage.getItem('task_logger_settings');
+    if (cachedSettings) {
+      try { Object.assign(state.settings, JSON.parse(cachedSettings)); } catch(e) {}
+    }
+    var cachedDevs = localStorage.getItem('cached_devices');
+    if (cachedDevs) {
+      try { state.devices = JSON.parse(cachedDevs); } catch(e) {}
+    }
+
+    // Theme toggle
+    if (state.settings.darkMode) {
+      document.body.classList.add('dark-mode');
+    }
+
+    // Time ticker
+    updateClockDisplay();
+    setInterval(updateClockDisplay, 1000);
+
+    // Hostname autocomplete
+    initHostnameAutocomplete();
+
+    // Check timer restore
+    restoreTimerIfActive();
+
+    // Input listeners for Auto/Manual state machine
+    el.inputTanggal.addEventListener('input', function() {
+      state.dateAuto = false;
+      updateBadges();
+    });
+    el.inputStart.addEventListener('input', function() {
+      state.startAuto = false;
+      updateBadges();
+    });
+    el.inputEnd.addEventListener('input', function() {
+      state.endAuto = false;
+      updateBadges();
+    });
+
+    // Reset icons
+    el.btnResetTanggal.addEventListener('click', function() {
+      state.dateAuto = true;
+      updateBadges();
+      updateClockDisplay();
+    });
+    el.btnResetStart.addEventListener('click', function() {
+      state.startAuto = true;
+      updateBadges();
+      updateCalculatedStartTime();
+    });
+    el.btnResetEnd.addEventListener('click', function() {
+      state.endAuto = true;
+      updateBadges();
+      updateClockDisplay();
+    });
+
+    // Duration Chips
+    el.chipsContainer.addEventListener('click', function(e) {
+      var chip = e.target.closest('.chip-btn');
+      if (chip && chip.dataset.min) {
+        applyDurationChip(parseInt(chip.dataset.min, 10));
+      }
+    });
+
+    // Timer Mode
+    el.timerBtn.addEventListener('click', toggleTimer);
+
+    // Collapsible "More" details
+    el.btnMore.addEventListener('click', function() {
+      var isExpanded = el.moreContent.classList.toggle('expanded');
+      el.btnMore.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+      el.btnMore.innerHTML = isExpanded ? '&#9650; Less details' : '&#9660; More details';
+    });
+
+    // Save button
+    el.btnSave.addEventListener('click', handleSave);
+
+    // Keyboard shortcut: Ctrl+Enter or Cmd+Enter to Save (FR-01)
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleSave();
+      }
+    });
+
+    // Header buttons
+    el.btnHistory.addEventListener('click', openHistoryModal);
+    el.btnSettings.addEventListener('click', openSettingsModal);
+    el.btnThemeToggle.addEventListener('click', function() {
+      var isDark = document.body.classList.toggle('dark-mode');
+      state.settings.darkMode = isDark;
+      localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
+    });
+
+    // Modal close buttons
+    el.btnCloseSettings.addEventListener('click', function() { el.settingsModal.classList.remove('visible'); });
+    el.btnCloseHistory.addEventListener('click', function() { el.historyModal.classList.remove('visible'); });
+    el.formSettings.addEventListener('submit', handleSaveSettings);
+    el.btnImportCsv.addEventListener('click', handleDeviceCsvImport);
+
+    // CSV File Reader
+    el.csvFileInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          el.csvTextarea.value = evt.target.result;
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Connection restored -> auto-flush offline queue
+    window.addEventListener('online', flushOfflineQueue);
+    window.addEventListener('focus', flushOfflineQueue);
+
+    // Initial backend config fetch
+    loadInitialConfig();
+  }
+
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})(window, document);
+
+  </script>
 </body>
 </html>

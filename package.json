@@ -5,7 +5,8 @@
   "main": "server/Code.js",
   "scripts": {
     "test": "node tests/unitTests.js",
-    "serve": "node tests/localServer.js"
+    "build": "node scripts/build.js",
+    "serve": "node scripts/build.js && node tests/localServer.js"
   },
   "keywords": [
     "google-apps-script",

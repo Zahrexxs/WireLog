@@ -1,0 +1,18 @@
+# Google Clasp ignore file
+# Ignores files from being pushed to Google Apps Script server
+
+**/**
+!appsscript.json
+!server/**
+!client/index.html
+
+# Specifically exclude non-GAS files
+tests/**
+docs/**
+node_modules/**
+.git/**
+package.json
+package-lock.json
+README.md
+.gitignore
+.claspignore

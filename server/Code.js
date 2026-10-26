@@ -10,8 +10,8 @@
  * Web app entry point — serves the single-page mobile-first interface
  */
 function doGet(e) {
-  var template = HtmlService.createTemplateFromFile('client/index');
-  return template.evaluate()
+  var output = HtmlService.createHtmlOutputFromFile('client/index');
+  return output
     .setTitle('Daily Task Logger')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
