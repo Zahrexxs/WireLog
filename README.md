@@ -19,7 +19,7 @@
 
 ## 📌 Overview
 
-**Daily Task Logger** replaces tedious spreadsheet entry with a modern, ergonomic web application designed to be operated with one thumb on a smartphone or via lightning-fast keyboard shortcuts on desktop. 
+**Daily Task Logger** replaces tedious spreadsheet entry with a modern, ergonomic web application designed laptop & desktop first with a multi-column dashboard and live activity feed, while retaining a fluid, touch-optimized mobile experience for smartphones.
 
 Every save dynamically resolves headers, clones existing formatting, verifies idempotency, and appends a valid row directly into your Google Sheet without ever risking formula corruption or text-formatted dates.
 
@@ -139,11 +139,13 @@ DEFAULT_TIMEZONE=Asia/Jakarta
 <table>
   <tr>
     <td width="50%">
-      <h3>⏱️ Under-15-Second Workflow</h3>
+      <h3>🖥️ Desktop-First & 📱 Mobile Fluid</h3>
       <ul>
-        <li><b>Single-Screen Mobile Fit</b>: All 6 core controls (<code>Task</code>, <code>Action</code>, <code>Hostname</code>, <code>Start</code>, <code>End</code>, <code>Save</code>) fit simultaneously on a 390×844 px screen without scrolling.</li>
+        <li><b>2-Column Desktop Dashboard</b>: Side-by-side Task/Action and Hostname/Category fields with all metadata visible without accordion clicks.</li>
+        <li><b>Live Activity Feed & Stats</b>: Real-time sticky sidebar displays today's tasks logged and total logged minutes.</li>
         <li><b>Ctrl+Enter Fast Save</b>: Instant keyboard commit from any field.</li>
-        <li><b>Sticky Defaults</b>: Keeps repeated metadata (<code>Category</code>, <code>Project Category</code>, <code>Severity</code>, <code>Status</code>, <code>Engineer</code>) while blanking <code>Hostname</code> and <code>Remark</code> for the next task.</li>
+        <li><b>Accessible Mobile Fallback</b>: Responsive layout stacks cleanly on screens &lt;900px with 44px tap targets and thumb-zone ergonomics.</li>
+        <li><b>Sticky Defaults</b>: Keeps repeated metadata while resetting Hostname and Remark for the next entry.</li>
       </ul>
     </td>
     <td width="50%">

@@ -113,6 +113,13 @@
     el.csvTextarea = document.getElementById('csvTextarea');
     el.btnImportCsv = document.getElementById('btnImportCsv');
     el.csvImportResult = document.getElementById('csvImportResult');
+
+    // Sidebar Live Feed (Desktop / Laptop First)
+    el.desktopFeedList = document.getElementById('desktopFeedList');
+    el.statTodayBadge = document.getElementById('statTodayBadge');
+    el.statTodayCount = document.getElementById('statTodayCount');
+    el.statTodayMinutes = document.getElementById('statTodayMinutes');
+    el.btnRefreshFeed = document.getElementById('btnRefreshFeed');
   }
 
   // --- UUID Generator ---
@@ -612,6 +619,7 @@
       if (res && res.success) {
         showSaveSuccess(res.rowNumber, payload);
         applyStickyDefaults();
+        refreshTodayFeed();
       } else {
         var errMsg = res ? res.error : 'Unknown save error';
         showToast(errMsg, 'error');
@@ -744,6 +752,7 @@
     callBackend('undoLast', savedInfo, function(res) {
       if (res && res.success) {
         showToast('Row ' + savedInfo.rowNumber + ' removed successfully.', 'info');
+        refreshTodayFeed();
         // Restore entry details into form
         el.inputTask.value = savedInfo.entry.task;
         el.inputAction.value = savedInfo.entry.action;
@@ -769,33 +778,62 @@
     }, 4500);
   }
 
-  // --- History & Today's Feed Modal ---
+  // --- History & Live Feed Rendering ---
+  function renderFeedCards(rows) {
+    if (!rows || rows.length === 0) {
+      var emptyHtml = '<div class="feed-empty">No tasks logged today yet.<br>Submit your first entry on the left!</div>';
+      if (el.desktopFeedList) el.desktopFeedList.innerHTML = emptyHtml;
+      if (el.historyList) el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
+      return;
+    }
+
+    var html = '';
+    rows.forEach(function(r) {
+      var catClass = (r.category || 'SUPPORT').toLowerCase();
+      html += '<div class="entry-card">' +
+        '<div class="entry-card-header">' +
+        '<span>' + escapeHtml(r.timeStart) + ' &ndash; ' + escapeHtml(r.timeEnd) + ' (' + (r.durationMinutes || 0) + 'm)</span>' +
+        '<span class="category-chip ' + catClass + '">' + escapeHtml(r.category || 'SUPPORT') + '</span>' +
+        '</div>' +
+        '<div class="entry-card-title">' + escapeHtml(r.task) + '</div>' +
+        '<div class="entry-card-meta">' + escapeHtml(r.action) + ' &bull; <strong>' + escapeHtml(r.hostname) + '</strong></div>' +
+        '</div>';
+    });
+
+    if (el.desktopFeedList) el.desktopFeedList.innerHTML = html;
+    if (el.historyList) el.historyList.innerHTML = html;
+  }
+
+  function refreshTodayFeed(callback) {
+    callBackend('todayRows', null, function(res) {
+      if (res && res.success) {
+        var count = res.count || (res.rows ? res.rows.length : 0);
+        var mins = res.totalMinutes || 0;
+        var summary = count + ' tasks | ' + mins + ' mins';
+
+        if (el.historyTotal) el.historyTotal.textContent = summary;
+        if (el.statTodayBadge) el.statTodayBadge.textContent = count + (count === 1 ? ' task' : ' tasks');
+        if (el.statTodayCount) el.statTodayCount.textContent = count;
+        if (el.statTodayMinutes) {
+          if (mins >= 60) {
+            var hrs = (mins / 60).toFixed(1);
+            el.statTodayMinutes.textContent = mins + 'm (' + hrs + 'h)';
+          } else {
+            el.statTodayMinutes.textContent = mins + 'm';
+          }
+        }
+
+        renderFeedCards(res.rows);
+        updateWeekdayStrip(res.rows);
+      }
+      if (typeof callback === 'function') callback(res);
+    });
+  }
+
   function openHistoryModal() {
     el.historyList.innerHTML = '<div style="text-align:center;padding:12px;">Loading today\'s entries...</div>';
     el.historyModal.classList.add('visible');
-
-    callBackend('todayRows', null, function(res) {
-      if (res && res.success) {
-        el.historyTotal.textContent = res.count + ' tasks | ' + res.totalMinutes + ' mins';
-        if (res.rows.length === 0) {
-          el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
-          return;
-        }
-
-        var html = '';
-        res.rows.forEach(function(r) {
-          html += '<div class="entry-card">' +
-            '<div class="entry-card-header">' +
-            '<span>Row #' + escapeHtml(r.rowNumber) + '</span>' +
-            '<span>' + escapeHtml(r.timeStart) + ' - ' + escapeHtml(r.timeEnd) + ' (' + escapeHtml(r.durationMinutes) + 'm)</span>' +
-            '</div>' +
-            '<div class="entry-card-title">' + escapeHtml(r.task) + '</div>' +
-            '<div class="entry-card-meta">' + escapeHtml(r.action) + ' &bull; <strong>' + escapeHtml(r.hostname) + '</strong></div>' +
-            '</div>';
-        });
-        el.historyList.innerHTML = html;
-      }
-    });
+    refreshTodayFeed();
   }
 
   // --- Settings & CSV Device Importer ---
@@ -943,12 +981,8 @@
       }
     });
 
-    // 3. Update today rows & weekday strip
-    callBackend('todayRows', null, function(res) {
-      if (res && res.success) {
-        updateWeekdayStrip(res.rows);
-      }
-    });
+    // 3. Update today rows & live activity feed
+    refreshTodayFeed();
   }
 
   // --- App Initialization ---
@@ -1044,6 +1078,13 @@
     // Header buttons
     el.btnHistory.addEventListener('click', openHistoryModal);
     el.btnSettings.addEventListener('click', openSettingsModal);
+    if (el.btnRefreshFeed) {
+      el.btnRefreshFeed.addEventListener('click', function() {
+        refreshTodayFeed(function() {
+          showToast('Live feed updated', 'info');
+        });
+      });
+    }
     el.btnThemeToggle.addEventListener('click', function() {
       var isDark = document.body.classList.toggle('dark-mode');
       state.settings.darkMode = isDark;

@@ -106,9 +106,160 @@ body {
 }
 
 .app-container {
-  max-width: 520px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 8px 12px;
+  padding: 12px 18px;
+}
+
+/* Responsive Dashboard Layout (Desktop / Laptop First) */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1.3fr 0.85fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.grid-desktop-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.grid-desktop-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* Sidebar Live Feed Card */
+.feed-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 14px;
+}
+
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.feed-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feed-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--chip-bg);
+  color: var(--primary);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.stats-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-mini-box {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-mini-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.stat-mini-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 2px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.desktop-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 540px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.feed-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Mobile Fallback Rules (< 900px) */
+@media (max-width: 899px) {
+  .app-container {
+    max-width: 520px;
+    padding: 8px 12px;
+  }
+
+  .main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .grid-desktop-2, .grid-desktop-4 {
+    display: block;
+  }
+
+  .grid-desktop-2 > .form-group:not(:last-child),
+  .grid-desktop-4 > .form-group:not(:last-child) {
+    margin-bottom: 12px;
+  }
+
+  .feed-card {
+    position: static;
+  }
+
+  .desktop-details-visible {
+    display: none;
+  }
+
+  .desktop-details-visible.expanded {
+    display: block;
+  }
+}
+
+@media (min-width: 900px) {
+  .desktop-details-visible {
+    display: block !important;
+  }
+
+  .collapsible-trigger.desktop-hidden {
+    display: none;
+  }
 }
 
 /* Header & Status Bar */
@@ -741,6 +892,30 @@ body.dark-mode .status-banner {
   color: var(--text-muted);
 }
 
+.category-chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.category-chip.support {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+}
+
+.category-chip.cr {
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+}
+
+.category-chip.incident {
+  background: rgba(239, 68, 68, 0.18);
+  color: #b91c1c;
+}
+
+
 </style>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -793,176 +968,226 @@ body.dark-mode .status-banner {
       <button type="button" class="preset-chip">Cek Endpoint Cabang</button>
     </div>
 
-    <!-- Main Entry Form -->
-    <form class="form-card" id="taskForm" onsubmit="return false;">
+    <!-- Main Responsive Dashboard Layout -->
+    <main class="main-layout">
+      <!-- Left Column: Fast Logging Form -->
+      <section class="form-pane" aria-label="Task Entry Form">
+        <form class="form-card" id="taskForm" onsubmit="return false;">
 
-      <!-- Task Field -->
-      <div class="form-group">
-        <label class="form-label" for="inputTask">
-          <span>Task <span style="color:var(--danger)">*</span></span>
-        </label>
-        <input type="text" id="inputTask" class="form-input" placeholder="e.g. Cek Endpoint Cabang" required autocomplete="off">
-      </div>
+          <!-- Task & Action Row (2 columns on desktop) -->
+          <div class="grid-desktop-2">
+            <!-- Task Field -->
+            <div class="form-group">
+              <label class="form-label" for="inputTask">
+                <span>Task <span style="color:var(--danger)">*</span></span>
+              </label>
+              <input type="text" id="inputTask" class="form-input" placeholder="e.g. Cek Endpoint Cabang" required autocomplete="off">
+            </div>
 
-      <!-- Action Field -->
-      <div class="form-group">
-        <label class="form-label" for="inputAction">
-          <span>Action <span style="color:var(--danger)">*</span></span>
-        </label>
-        <input type="text" id="inputAction" class="form-input" placeholder="e.g. Cek disabled user dan learned MAC Address" required autocomplete="off">
-      </div>
-
-      <!-- Impacted Device [Hostname] Field with Autocomplete -->
-      <div class="form-group">
-        <label class="form-label" for="inputHostname">
-          <span>Impacted Device [Hostname] <span style="color:var(--danger)">*</span></span>
-          <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
-        </label>
-        <input type="text" id="inputHostname" class="form-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
-        <div class="autocomplete-list" id="hostnameList" role="listbox" aria-label="Device suggestions"></div>
-      </div>
-
-      <!-- Time Duration (Start, End) -->
-      <div class="time-row">
-        <!-- Start Time -->
-        <div class="form-group">
-          <label class="form-label" for="inputStart">
-            <span class="time-header-badge">
-              Start
-              <span class="badge badge-auto" id="badgeStart">Auto</span>
-            </span>
-            <button type="button" class="btn-reset-time" id="btnResetStart" title="Reset to Auto" style="display:none">&#8635;</button>
-          </label>
-          <div class="time-input-container">
-            <input type="time" id="inputStart" class="form-input" required>
-          </div>
-        </div>
-
-        <!-- End Time -->
-        <div class="form-group">
-          <label class="form-label" for="inputEnd">
-            <span class="time-header-badge">
-              End
-              <span class="badge badge-auto" id="badgeEnd">Auto</span>
-            </span>
-            <button type="button" class="btn-reset-time" id="btnResetEnd" title="Reset to Auto" style="display:none">&#8635;</button>
-          </label>
-          <div class="time-input-container">
-            <input type="time" id="inputEnd" class="form-input" required>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Duration Chips & Timer Mode -->
-      <div class="chips-row" id="chipsContainer">
-        <button type="button" class="chip-btn" data-min="1">+1m</button>
-        <button type="button" class="chip-btn" data-min="5">+5m</button>
-        <button type="button" class="chip-btn" data-min="10">+10m</button>
-        <button type="button" class="chip-btn" data-min="15">+15m</button>
-        <button type="button" class="chip-btn" data-min="30">+30m</button>
-        <button type="button" class="chip-btn" data-min="60">+60m</button>
-        <button type="button" class="chip-btn" data-min="90">+90m</button>
-        <button type="button" class="timer-btn" id="timerBtn" title="Start persistent task timer">&#9654; Timer</button>
-      </div>
-
-      <!-- Category 3-way Toggle -->
-      <div class="form-group">
-        <label class="form-label">Category</label>
-        <div class="segmented-control">
-          <input type="radio" name="category" id="catSupport" value="SUPPORT" checked>
-          <label for="catSupport">SUPPORT</label>
-          <input type="radio" name="category" id="catCr" value="CR">
-          <label for="catCr">CR</label>
-          <input type="radio" name="category" id="catIncident" value="INCIDENT">
-          <label for="catIncident">INCIDENT</label>
-        </div>
-      </div>
-
-      <!-- Collapsible Section: Secondary Details -->
-      <button type="button" class="collapsible-trigger" id="btnMore" aria-expanded="false" aria-controls="moreContent">
-        &#9660; More details
-      </button>
-
-      <div class="collapsible-content" id="moreContent">
-        <!-- Date (Tanggal) -->
-        <div class="form-group">
-          <label class="form-label" for="inputTanggal">
-            <span class="time-header-badge">
-              Tanggal
-              <span class="badge badge-auto" id="badgeTanggal">Auto</span>
-            </span>
-            <button type="button" class="btn-reset-time" id="btnResetTanggal" title="Reset to Today" style="display:none">&#8635;</button>
-          </label>
-          <input type="date" id="inputTanggal" class="form-input" required>
-        </div>
-
-        <div class="grid-2">
-          <!-- Project Category -->
-          <div class="form-group">
-            <label class="form-label" for="selectProjectCategory">Project Category</label>
-            <select id="selectProjectCategory" class="form-select">
-              <option value="KANTOR CABANG">KANTOR CABANG</option>
-            </select>
+            <!-- Action Field -->
+            <div class="form-group">
+              <label class="form-label" for="inputAction">
+                <span>Action <span style="color:var(--danger)">*</span></span>
+              </label>
+              <input type="text" id="inputAction" class="form-input" placeholder="e.g. Cek disabled user dan learned MAC Address" required autocomplete="off">
+            </div>
           </div>
 
-          <!-- Severity -->
-          <div class="form-group">
-            <label class="form-label" for="selectSeverity">Severity</label>
-            <select id="selectSeverity" class="form-select">
-              <option value="Minor">Minor</option>
-              <option value="Major">Major</option>
-              <option value="Critical">Critical</option>
-            </select>
+          <!-- Impacted Device & Category Row (2 columns on desktop) -->
+          <div class="grid-desktop-2">
+            <!-- Impacted Device [Hostname] Field with Autocomplete -->
+            <div class="form-group">
+              <label class="form-label" for="inputHostname">
+                <span>Impacted Device [Hostname] <span style="color:var(--danger)">*</span></span>
+                <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
+              </label>
+              <input type="text" id="inputHostname" class="form-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
+              <div class="autocomplete-list" id="hostnameList" role="listbox" aria-label="Device suggestions"></div>
+            </div>
+
+            <!-- Category 3-way Toggle -->
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <div class="segmented-control">
+                <input type="radio" name="category" id="catSupport" value="SUPPORT" checked>
+                <label for="catSupport">SUPPORT</label>
+                <input type="radio" name="category" id="catCr" value="CR">
+                <label for="catCr">CR</label>
+                <input type="radio" name="category" id="catIncident" value="INCIDENT">
+                <label for="catIncident">INCIDENT</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time Duration (Start, End) -->
+          <div class="time-row">
+            <!-- Start Time -->
+            <div class="form-group">
+              <label class="form-label" for="inputStart">
+                <span class="time-header-badge">
+                  Start
+                  <span class="badge badge-auto" id="badgeStart">Auto</span>
+                </span>
+                <button type="button" class="btn-reset-time" id="btnResetStart" title="Reset to Auto" style="display:none">&#8635;</button>
+              </label>
+              <div class="time-input-container">
+                <input type="time" id="inputStart" class="form-input" required>
+              </div>
+            </div>
+
+            <!-- End Time -->
+            <div class="form-group">
+              <label class="form-label" for="inputEnd">
+                <span class="time-header-badge">
+                  End
+                  <span class="badge badge-auto" id="badgeEnd">Auto</span>
+                </span>
+                <button type="button" class="btn-reset-time" id="btnResetEnd" title="Reset to Auto" style="display:none">&#8635;</button>
+              </label>
+              <div class="time-input-container">
+                <input type="time" id="inputEnd" class="form-input" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Duration Chips & Timer Mode -->
+          <div class="chips-row" id="chipsContainer">
+            <button type="button" class="chip-btn" data-min="1">+1m</button>
+            <button type="button" class="chip-btn" data-min="5">+5m</button>
+            <button type="button" class="chip-btn" data-min="10">+10m</button>
+            <button type="button" class="chip-btn" data-min="15">+15m</button>
+            <button type="button" class="chip-btn" data-min="30">+30m</button>
+            <button type="button" class="chip-btn" data-min="60">+60m</button>
+            <button type="button" class="chip-btn" data-min="90">+90m</button>
+            <button type="button" class="timer-btn" id="timerBtn" title="Start persistent task timer">&#9654; Timer</button>
+          </div>
+
+          <!-- Collapsible Section for Mobile, Expanded Grid for Desktop -->
+          <button type="button" class="collapsible-trigger desktop-hidden" id="btnMore" aria-expanded="false" aria-controls="moreContent">
+            &#9660; More details
+          </button>
+
+          <div class="collapsible-content desktop-details-visible" id="moreContent">
+            <!-- 4-col grid on desktop for Secondary Details -->
+            <div class="grid-desktop-4">
+              <!-- Date (Tanggal) -->
+              <div class="form-group">
+                <label class="form-label" for="inputTanggal">
+                  <span class="time-header-badge">
+                    Tanggal
+                    <span class="badge badge-auto" id="badgeTanggal">Auto</span>
+                  </span>
+                  <button type="button" class="btn-reset-time" id="btnResetTanggal" title="Reset to Today" style="display:none">&#8635;</button>
+                </label>
+                <input type="date" id="inputTanggal" class="form-input" required>
+              </div>
+
+              <!-- Project Category -->
+              <div class="form-group">
+                <label class="form-label" for="selectProjectCategory">Project Category</label>
+                <select id="selectProjectCategory" class="form-select">
+                  <option value="KANTOR CABANG">KANTOR CABANG</option>
+                </select>
+              </div>
+
+              <!-- Severity -->
+              <div class="form-group">
+                <label class="form-label" for="selectSeverity">Severity</label>
+                <select id="selectSeverity" class="form-select">
+                  <option value="Minor">Minor</option>
+                  <option value="Major">Major</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div class="form-group">
+                <label class="form-label" for="selectStatus">Status</label>
+                <select id="selectStatus" class="form-select">
+                  <option value="CLOSED">CLOSED</option>
+                  <option value="IN PROGRESS">IN PROGRESS</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="OPEN">OPEN</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-desktop-2">
+              <!-- Request by -->
+              <div class="form-group">
+                <label class="form-label" for="selectRequestBy">Request by</label>
+                <select id="selectRequestBy" class="form-select">
+                  <option value="Desktop">Desktop</option>
+                  <option value="IT REP">IT REP</option>
+                  <option value="Network">Network</option>
+                </select>
+              </div>
+
+              <!-- Engineer -->
+              <div class="form-group">
+                <label class="form-label" for="selectEngineer">Engineer</label>
+                <select id="selectEngineer" class="form-select">
+                  <option value="">(Select Engineer)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Remark/Note -->
+            <div class="form-group">
+              <label class="form-label" for="inputRemark">Remark / Note</label>
+              <textarea id="inputRemark" class="form-textarea" placeholder="Optional notes or context"></textarea>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="action-buttons">
+            <button type="button" class="btn-save" id="btnSave">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Save Task (Ctrl+Enter)
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Right Column: Live Today's Activity & Analytics Feed (Desktop / Laptop First) -->
+      <aside class="sidebar-pane" aria-label="Today's Activity Feed">
+        <div class="feed-card">
+          <div class="feed-header">
+            <div class="feed-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--primary)">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Today's Activity
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="feed-badge" id="statTodayBadge">0 tasks</span>
+              <button type="button" class="icon-btn" id="btnRefreshFeed" title="Refresh live feed" aria-label="Refresh live feed" style="width:28px;height:28px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mini Stats Grid -->
+          <div class="stats-mini-grid">
+            <div class="stat-mini-box">
+              <span class="stat-mini-label">Tasks Logged</span>
+              <span class="stat-mini-val" id="statTodayCount">0</span>
+            </div>
+            <div class="stat-mini-box">
+              <span class="stat-mini-label">Logged Time</span>
+              <span class="stat-mini-val" id="statTodayMinutes">0m</span>
+            </div>
+          </div>
+
+          <!-- Live Desktop Feed List -->
+          <div class="desktop-feed-list" id="desktopFeedList">
+            <div class="feed-empty">No tasks logged today yet.<br>Submit your first entry on the left!</div>
           </div>
         </div>
-
-        <div class="grid-2">
-          <!-- Status -->
-          <div class="form-group">
-            <label class="form-label" for="selectStatus">Status</label>
-            <select id="selectStatus" class="form-select">
-              <option value="CLOSED">CLOSED</option>
-              <option value="IN PROGRESS">IN PROGRESS</option>
-              <option value="PENDING">PENDING</option>
-              <option value="OPEN">OPEN</option>
-            </select>
-          </div>
-
-          <!-- Request by -->
-          <div class="form-group">
-            <label class="form-label" for="selectRequestBy">Request by</label>
-            <select id="selectRequestBy" class="form-select">
-              <option value="Desktop">Desktop</option>
-              <option value="IT REP">IT REP</option>
-              <option value="Network">Network</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Engineer -->
-        <div class="form-group">
-          <label class="form-label" for="selectEngineer">Engineer</label>
-          <select id="selectEngineer" class="form-select">
-            <option value="">(Select Engineer)</option>
-          </select>
-        </div>
-
-        <!-- Remark/Note -->
-        <div class="form-group">
-          <label class="form-label" for="inputRemark">Remark / Note</label>
-          <textarea id="inputRemark" class="form-textarea" placeholder="Optional notes or context"></textarea>
-        </div>
-      </div>
-
-      <!-- Save Button -->
-      <div class="action-buttons">
-        <button type="button" class="btn-save" id="btnSave">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Save Task (Ctrl+Enter)
-        </button>
-      </div>
-
-    </form>
+      </aside>
+    </main>
 
     <!-- Floating Toast Notification with Undo -->
     <div class="toast-container" id="toastContainer"></div>
@@ -1656,6 +1881,13 @@ body.dark-mode .status-banner {
     el.csvTextarea = document.getElementById('csvTextarea');
     el.btnImportCsv = document.getElementById('btnImportCsv');
     el.csvImportResult = document.getElementById('csvImportResult');
+
+    // Sidebar Live Feed (Desktop / Laptop First)
+    el.desktopFeedList = document.getElementById('desktopFeedList');
+    el.statTodayBadge = document.getElementById('statTodayBadge');
+    el.statTodayCount = document.getElementById('statTodayCount');
+    el.statTodayMinutes = document.getElementById('statTodayMinutes');
+    el.btnRefreshFeed = document.getElementById('btnRefreshFeed');
   }
 
   // --- UUID Generator ---
@@ -2155,6 +2387,7 @@ body.dark-mode .status-banner {
       if (res && res.success) {
         showSaveSuccess(res.rowNumber, payload);
         applyStickyDefaults();
+        refreshTodayFeed();
       } else {
         var errMsg = res ? res.error : 'Unknown save error';
         showToast(errMsg, 'error');
@@ -2287,6 +2520,7 @@ body.dark-mode .status-banner {
     callBackend('undoLast', savedInfo, function(res) {
       if (res && res.success) {
         showToast('Row ' + savedInfo.rowNumber + ' removed successfully.', 'info');
+        refreshTodayFeed();
         // Restore entry details into form
         el.inputTask.value = savedInfo.entry.task;
         el.inputAction.value = savedInfo.entry.action;
@@ -2312,33 +2546,62 @@ body.dark-mode .status-banner {
     }, 4500);
   }
 
-  // --- History & Today's Feed Modal ---
+  // --- History & Live Feed Rendering ---
+  function renderFeedCards(rows) {
+    if (!rows || rows.length === 0) {
+      var emptyHtml = '<div class="feed-empty">No tasks logged today yet.<br>Submit your first entry on the left!</div>';
+      if (el.desktopFeedList) el.desktopFeedList.innerHTML = emptyHtml;
+      if (el.historyList) el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
+      return;
+    }
+
+    var html = '';
+    rows.forEach(function(r) {
+      var catClass = (r.category || 'SUPPORT').toLowerCase();
+      html += '<div class="entry-card">' +
+        '<div class="entry-card-header">' +
+        '<span>' + escapeHtml(r.timeStart) + ' &ndash; ' + escapeHtml(r.timeEnd) + ' (' + (r.durationMinutes || 0) + 'm)</span>' +
+        '<span class="category-chip ' + catClass + '">' + escapeHtml(r.category || 'SUPPORT') + '</span>' +
+        '</div>' +
+        '<div class="entry-card-title">' + escapeHtml(r.task) + '</div>' +
+        '<div class="entry-card-meta">' + escapeHtml(r.action) + ' &bull; <strong>' + escapeHtml(r.hostname) + '</strong></div>' +
+        '</div>';
+    });
+
+    if (el.desktopFeedList) el.desktopFeedList.innerHTML = html;
+    if (el.historyList) el.historyList.innerHTML = html;
+  }
+
+  function refreshTodayFeed(callback) {
+    callBackend('todayRows', null, function(res) {
+      if (res && res.success) {
+        var count = res.count || (res.rows ? res.rows.length : 0);
+        var mins = res.totalMinutes || 0;
+        var summary = count + ' tasks | ' + mins + ' mins';
+
+        if (el.historyTotal) el.historyTotal.textContent = summary;
+        if (el.statTodayBadge) el.statTodayBadge.textContent = count + (count === 1 ? ' task' : ' tasks');
+        if (el.statTodayCount) el.statTodayCount.textContent = count;
+        if (el.statTodayMinutes) {
+          if (mins >= 60) {
+            var hrs = (mins / 60).toFixed(1);
+            el.statTodayMinutes.textContent = mins + 'm (' + hrs + 'h)';
+          } else {
+            el.statTodayMinutes.textContent = mins + 'm';
+          }
+        }
+
+        renderFeedCards(res.rows);
+        updateWeekdayStrip(res.rows);
+      }
+      if (typeof callback === 'function') callback(res);
+    });
+  }
+
   function openHistoryModal() {
     el.historyList.innerHTML = '<div style="text-align:center;padding:12px;">Loading today\'s entries...</div>';
     el.historyModal.classList.add('visible');
-
-    callBackend('todayRows', null, function(res) {
-      if (res && res.success) {
-        el.historyTotal.textContent = res.count + ' tasks | ' + res.totalMinutes + ' mins';
-        if (res.rows.length === 0) {
-          el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
-          return;
-        }
-
-        var html = '';
-        res.rows.forEach(function(r) {
-          html += '<div class="entry-card">' +
-            '<div class="entry-card-header">' +
-            '<span>Row #' + escapeHtml(r.rowNumber) + '</span>' +
-            '<span>' + escapeHtml(r.timeStart) + ' - ' + escapeHtml(r.timeEnd) + ' (' + escapeHtml(r.durationMinutes) + 'm)</span>' +
-            '</div>' +
-            '<div class="entry-card-title">' + escapeHtml(r.task) + '</div>' +
-            '<div class="entry-card-meta">' + escapeHtml(r.action) + ' &bull; <strong>' + escapeHtml(r.hostname) + '</strong></div>' +
-            '</div>';
-        });
-        el.historyList.innerHTML = html;
-      }
-    });
+    refreshTodayFeed();
   }
 
   // --- Settings & CSV Device Importer ---
@@ -2486,12 +2749,8 @@ body.dark-mode .status-banner {
       }
     });
 
-    // 3. Update today rows & weekday strip
-    callBackend('todayRows', null, function(res) {
-      if (res && res.success) {
-        updateWeekdayStrip(res.rows);
-      }
-    });
+    // 3. Update today rows & live activity feed
+    refreshTodayFeed();
   }
 
   // --- App Initialization ---
@@ -2587,6 +2846,13 @@ body.dark-mode .status-banner {
     // Header buttons
     el.btnHistory.addEventListener('click', openHistoryModal);
     el.btnSettings.addEventListener('click', openSettingsModal);
+    if (el.btnRefreshFeed) {
+      el.btnRefreshFeed.addEventListener('click', function() {
+        refreshTodayFeed(function() {
+          showToast('Live feed updated', 'info');
+        });
+      });
+    }
     el.btnThemeToggle.addEventListener('click', function() {
       var isDark = document.body.classList.toggle('dark-mode');
       state.settings.darkMode = isDark;
