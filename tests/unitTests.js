@@ -62,6 +62,29 @@ test('Fraction 551/1440 converts to 9:11:00 AM', () => {
   assert.strictEqual(timeStr, '9:11:00 AM');
 });
 
+test('Serial 46266 resolves to Tuesday (weekday index 2)', () => {
+  assert.strictEqual(TimeUtils.weekdayIndexFromSerial(46266), 2);
+});
+
+test('Week counts only include the current Mon-Sun week', () => {
+  // 46266 is Tuesday; the week runs Mon 46265 .. Sun 46271.
+  const counts = TimeUtils.weekCountsFromSerials([46265, 46265, 46266, 46260, 46271], 46266);
+  assert.strictEqual(counts.Mon, 2);
+  assert.strictEqual(counts.Tue, 1);
+  assert.strictEqual(counts.Sun, 1);
+  assert.strictEqual(counts.Wed, 0);
+  // 46260 (previous Thursday) must not leak into this week.
+  assert.strictEqual(counts.Thu, 0);
+});
+
+test('Week counts place Sunday in the week that started the preceding Monday', () => {
+  // 46271 is Sunday of the 46265 week; the next Monday is 46272.
+  const counts = TimeUtils.weekCountsFromSerials([46265, 46271, 46272], 46271);
+  // 46272 is the following Monday and must be excluded (otherwise Mon would be 2).
+  assert.strictEqual(counts.Mon, 1);
+  assert.strictEqual(counts.Sun, 1);
+});
+
 console.log('\n--- 2. Dynamic Column Mapper (S1-3) ---');
 
 test('Maps exact 14 columns matching sheet contract', () => {

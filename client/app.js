@@ -56,8 +56,9 @@
 
     // Offline & Undo
     offlineQueue: [],
-    lastSavedEntry: null,
-    undoTimeoutId: null,
+    saving: false,
+    undo: { toast: null, timerId: null, entry: null, rowNumber: null },
+    lastFocused: null,
 
     // Weekday counts
     weekdayCounts: { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 }
@@ -65,6 +66,18 @@
 
   // --- DOM Elements ---
   var el = {};
+
+  // Original Save button markup, captured once in init() so the icon and the
+  // "(Ctrl+Enter)" hint survive every save attempt.
+  var SAVE_LABEL_HTML = '';
+
+  // Save watchdog: never leave the form stuck in the "Saving..." state.
+  var SAVE_WATCHDOG_MS = 20000;
+
+  // Undo toast lifetime
+  var UNDO_SECONDS = 30;
+
+  var FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
   // HTML sanitization helper to prevent Stored XSS (CWE-79)
   function escapeHtml(str) {
@@ -164,29 +177,40 @@
 
   // --- Backend Wrapper (Supports google.script.run and Local Mock) ---
   function callBackend(methodName, args, onSuccess, onFailure) {
-    if (window.google && window.google.script && window.google.script.run) {
-      var runner = window.google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFailure || function(err) {
-          showToast('Server error: ' + (err.message || err), 'error');
-        });
-      if (args !== undefined && args !== null) {
-        runner[methodName](args);
+    // Never throw out of a backend call: route every error through onFailure.
+    function failureHandler(prefix) {
+      return function(err) {
+        if (typeof onFailure === 'function') {
+          onFailure(err);
+          return;
+        }
+        showToast(prefix + ': ' + ((err && err.message) || err), 'error');
+      };
+    }
+
+    try {
+      if (window.google && window.google.script && window.google.script.run) {
+        var runner = window.google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(failureHandler('Server error'));
+        if (args !== undefined && args !== null) {
+          runner[methodName](args);
+        } else {
+          runner[methodName]();
+        }
+      } else if (window.__MOCK_BACKEND__) {
+        // Local development mock server
+        window.__MOCK_BACKEND__[methodName](args)
+          .then(onSuccess)
+          .catch(failureHandler('Mock server error'));
       } else {
-        runner[methodName]();
+        // Offline fallback
+        setTimeout(function() {
+          if (onFailure) onFailure(new Error('Backend unavailable (Offline)'));
+        }, 50);
       }
-    } else if (window.__MOCK_BACKEND__) {
-      // Local development mock server
-      window.__MOCK_BACKEND__[methodName](args)
-        .then(onSuccess)
-        .catch(onFailure || function(err) {
-          showToast('Mock server error: ' + (err.message || err), 'error');
-        });
-    } else {
-      // Offline fallback
-      setTimeout(function() {
-        if (onFailure) onFailure(new Error('Backend unavailable (Offline)'));
-      }, 50);
+    } catch (err) {
+      failureHandler('Backend error')(err);
     }
   }
 
@@ -653,40 +677,41 @@
   }
 
   // --- Weekday Coverage Strip (FR-12 & S4-3) ---
-  function updateWeekdayStrip(entries) {
-    var counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
-    var todayD = ClockSync.nowDate();
-    var currentDayIdx = todayD.getDay(); // 0 is Sun, 1 is Mon...
-
-    var daysMap = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', ''];
-    var todayKey = daysMap[currentDayIdx] || '';
-
-    // Count entries
-    (entries || []).forEach(function(r) {
-      var dParts = TimeUtils.parseDateParts(r.tanggal);
-      if (dParts) {
-        var d = new Date(dParts.year, dParts.month - 1, dParts.day);
-        var dayName = daysMap[d.getDay()];
-        if (dayName && counts[dayName] !== undefined) {
-          counts[dayName]++;
-        }
-      }
-    });
-
+  // weekCounts is the Mon..Sun map the backend computes for the current week in
+  // the configured timezone. Counting today's rows here made every earlier
+  // weekday look "missed", so the counts must come from the backend.
+  function updateWeekdayStrip(weekCounts) {
+    var counts = weekCounts || {};
     var keys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+    var todayKey = '';
+    try {
+      todayKey = new Intl.DateTimeFormat('en-US', {
+        timeZone: state.settings.timeZone || 'Asia/Jakarta',
+        weekday: 'short'
+      }).format(ClockSync.nowDate());
+    } catch (e) {
+      todayKey = '';
+    }
+
+    var todayIdx = keys.indexOf(todayKey);
+    var isWeekend = todayKey === 'Sat' || todayKey === 'Sun';
+
     var html = '';
     keys.forEach(function(k, idx) {
-      var c = counts[k];
+      var c = Number(counts[k] || 0);
       var isToday = k === todayKey;
-      var isPast = (idx + 1) < currentDayIdx;
+      // Weekend days do not belong to the Mon-Fri coverage window.
+      var isPast = !isWeekend && todayIdx > -1 && idx < todayIdx;
       var countClass = 'weekday-count';
 
       if (c > 0) countClass += ' has-entries';
       if (isToday) countClass += ' today';
       if (isPast && c === 0) countClass += ' missed';
 
-      html += '<div class="weekday-col">' +
-        '<span class="weekday-name">' + k + '</span>' +
+      html += '<div class="weekday-col" role="listitem" aria-label="' +
+        k + ', ' + c + (c === 1 ? ' entry' : ' entries') + '">' +
+        '<span class="weekday-name" aria-hidden="true">' + k + '</span>' +
         '<div class="' + countClass + '">' + c + '</div>' +
         '</div>';
     });
@@ -695,7 +720,21 @@
   }
 
   // --- Save Workflow ---
+  function restoreSaveButton() {
+    if (!el.btnSave) return;
+    el.btnSave.disabled = false;
+    el.btnSave.removeAttribute('aria-busy');
+    el.btnSave.innerHTML = SAVE_LABEL_HTML;
+  }
+
   function handleSave() {
+    if (state.saving) return;
+    state.saving = true;
+
+    // Drop any undo timer left over from a previous save so it can never clear
+    // the state of the save we are about to register.
+    clearUndoToast();
+
     // 1. Re-stamp any field still in AUTO at this instant (Rule 6)
     var currentNow = ClockSync.nowDate();
 
@@ -725,6 +764,7 @@
     var remark = (el.inputRemark.value || '').trim();
 
     if (!task || !action || !hostname || !timeStart || !timeEnd) {
+      state.saving = false;
       showToast('Please fill all required fields.', 'warning');
       return;
     }
@@ -744,6 +784,7 @@
       if (confirmNextDay) {
         isNextDay = true;
       } else {
+        state.saving = false;
         showToast('Please adjust Start or End time.', 'warning');
         return;
       }
@@ -753,7 +794,10 @@
     var confirmLong = false;
     if (durationMin > 720) {
       confirmLong = window.confirm('Task duration is over 12 hours (' + Math.round(durationMin / 60) + 'h). Proceed?');
-      if (!confirmLong) return;
+      if (!confirmLong) {
+        state.saving = false;
+        return;
+      }
     }
 
     // Automatically register and persist any new Task or Action option for dropdown autocomplete
@@ -794,11 +838,21 @@
 
     // UI Feedback
     el.btnSave.disabled = true;
+    el.btnSave.setAttribute('aria-busy', 'true');
     el.btnSave.innerHTML = '<span class="pulse-dot"></span> Saving...';
 
+    // Watchdog: a pending save must never lock the form forever.
+    var watchdogId = setTimeout(function() {
+      if (!state.saving) return;
+      state.saving = false;
+      restoreSaveButton();
+      showToast('Still saving — check the sheet before retrying.', 'warning');
+    }, SAVE_WATCHDOG_MS);
+
     callBackend('saveEntry', payload, function(res) {
-      el.btnSave.disabled = false;
-      el.btnSave.innerHTML = 'Save Task';
+      clearTimeout(watchdogId);
+      state.saving = false;
+      restoreSaveButton();
 
       if (res && res.success) {
         showSaveSuccess(res.rowNumber, payload);
@@ -809,12 +863,23 @@
         showToast(errMsg, 'error');
       }
     }, function(err) {
-      // Offline / Network Failure: Queue locally (FR-11 & S4-2)
-      el.btnSave.disabled = false;
-      el.btnSave.innerHTML = 'Save Task';
-      enqueueOfflineSave(payload);
-      applyStickyDefaults();
-      showToast('Saved offline to queue (Pending). Will sync automatically.', 'info');
+      clearTimeout(watchdogId);
+      state.saving = false;
+      restoreSaveButton();
+
+      // Only queue when this really looks like a network/offline failure;
+      // a real backend error keeps the form populated for a retry.
+      var offline = (navigator.onLine === false) ||
+        !err ||
+        /network|offline|failed to fetch|timeout/i.test(String((err && err.message) || err));
+
+      if (offline) {
+        enqueueOfflineSave(payload);
+        applyStickyDefaults();
+        showToast('Saved offline to queue (Pending). Will sync automatically.', 'info');
+      } else {
+        showToast('Save failed: ' + String((err && err.message) || err), 'error');
+      }
     });
   }
 
@@ -858,11 +923,13 @@
     updateOfflineStatusBanner();
   }
 
-  function updateOfflineStatusBanner() {
+  function updateOfflineStatusBanner(syncFailed) {
     var count = state.offlineQueue.length;
     if (count > 0) {
       el.statusBanner.classList.add('visible');
-      el.statusBannerText.textContent = 'Pending (' + count + ') — Syncing automatically...';
+      el.statusBannerText.textContent = syncFailed
+        ? 'Pending (' + count + ') — Sync failed, will retry...'
+        : 'Pending (' + count + ') — Syncing automatically...';
     } else {
       el.statusBanner.classList.remove('visible');
     }
@@ -872,6 +939,16 @@
     if (state.offlineQueue.length === 0) return;
 
     var queueCopy = state.offlineQueue.slice();
+
+    // Persist everything from fromIndex onwards (the failed item included).
+    var persistPending = function(fromIndex, syncFailed) {
+      state.offlineQueue = queueCopy.slice(fromIndex);
+      try {
+        localStorage.setItem('offline_task_queue', JSON.stringify(state.offlineQueue));
+      } catch (e) {}
+      updateOfflineStatusBanner(syncFailed);
+    };
+
     var processNext = function(index) {
       if (index >= queueCopy.length) {
         state.offlineQueue = [];
@@ -883,12 +960,17 @@
 
       var item = queueCopy[index];
       callBackend('saveEntry', item, function(res) {
+        if (res && res.success === false) {
+          // The backend rejected this entry: keep it (and everything after it)
+          // queued instead of silently dropping the batch.
+          persistPending(index, true);
+          showToast('Offline sync failed: ' + ((res && res.error) || 'Unknown error'), 'error');
+          return;
+        }
         processNext(index + 1);
       }, function(err) {
         // Still failing, pause queue
-        state.offlineQueue = queueCopy.slice(index);
-        localStorage.setItem('offline_task_queue', JSON.stringify(state.offlineQueue));
-        updateOfflineStatusBanner();
+        persistPending(index, true);
       });
     };
 
@@ -896,37 +978,65 @@
   }
 
   // --- Undo (30s) Toast (FR-10 & S3-5) ---
+  function clearUndoToast() {
+    if (state.undo.timerId) {
+      clearInterval(state.undo.timerId);
+      state.undo.timerId = null;
+    }
+    if (state.undo.toast && state.undo.toast.parentNode) {
+      state.undo.toast.parentNode.removeChild(state.undo.toast);
+    }
+    state.undo.toast = null;
+    state.undo.entry = null;
+    state.undo.rowNumber = null;
+  }
+
+  // Removes the short-lived toasts but never the actionable Undo toast.
+  function clearTransientToasts() {
+    if (!el.toastContainer) return;
+    var nodes = el.toastContainer.querySelectorAll('.toast:not(.toast-undo)');
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+    }
+  }
+
   function showSaveSuccess(rowNumber, payload) {
-    state.lastSavedEntry = { rowNumber: rowNumber, entry: payload };
+    // A newer save replaces any older undo window.
+    clearUndoToast();
 
     var msg = 'Saved to row ' + (rowNumber || '') + '!';
     var toast = document.createElement('div');
-    toast.className = 'toast';
+    toast.className = 'toast toast-undo';
     toast.innerHTML = '<span>' + msg + '</span>' +
-      '<button class="btn-undo" id="btnUndoToast">Undo (30s)</button>';
+      '<button type="button" class="btn-undo" aria-label="Undo last save">Undo <span aria-hidden="true">(' + UNDO_SECONDS + 's)</span></button>';
 
-    el.toastContainer.innerHTML = '';
+    clearTransientToasts();
     el.toastContainer.appendChild(toast);
 
-    var undoBtn = document.getElementById('btnUndoToast');
-    var secondsLeft = 30;
+    var undoBtn = toast.querySelector('.btn-undo');
+    var secondsLabel = toast.querySelector('.btn-undo span');
+    var secondsLeft = UNDO_SECONDS;
 
-    var timer = setInterval(function() {
+    state.undo.toast = toast;
+    state.undo.entry = payload;
+    state.undo.rowNumber = rowNumber;
+
+    state.undo.timerId = setInterval(function() {
       secondsLeft--;
       if (secondsLeft > 0) {
-        undoBtn.textContent = 'Undo (' + secondsLeft + 's)';
+        if (secondsLabel) secondsLabel.textContent = '(' + secondsLeft + 's)';
       } else {
-        clearInterval(timer);
-        if (toast.parentNode) toast.parentNode.removeChild(toast);
-        state.lastSavedEntry = null;
+        clearUndoToast();
       }
     }, 1000);
 
-    undoBtn.addEventListener('click', function() {
-      clearInterval(timer);
-      handleUndo(state.lastSavedEntry);
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    });
+    if (undoBtn) {
+      undoBtn.addEventListener('click', function() {
+        var savedInfo = { rowNumber: state.undo.rowNumber, entry: state.undo.entry };
+        clearUndoToast();
+        handleUndo(savedInfo);
+      });
+    }
   }
 
   function handleUndo(savedInfo) {
@@ -954,7 +1064,8 @@
     toast.className = 'toast ' + type;
     toast.textContent = message;
 
-    el.toastContainer.innerHTML = '';
+    // Only replace transient toasts — the Undo toast has its own slot.
+    clearTransientToasts();
     el.toastContainer.appendChild(toast);
 
     setTimeout(function() {
@@ -963,11 +1074,13 @@
   }
 
   // --- History & Live Feed Rendering ---
+  var EMPTY_FEED_MESSAGE = 'No entries yet today — log your first task above.';
+
   function renderFeedCards(rows) {
     if (!rows || rows.length === 0) {
-      var emptyHtml = '<div class="feed-empty">No tasks logged today yet.<br>Submit your first entry on the left!</div>';
+      var emptyHtml = '<div class="feed-empty">' + EMPTY_FEED_MESSAGE + '</div>';
       if (el.desktopFeedList) el.desktopFeedList.innerHTML = emptyHtml;
-      if (el.historyList) el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
+      if (el.historyList) el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">' + EMPTY_FEED_MESSAGE + '</div>';
       return;
     }
 
@@ -1025,15 +1138,108 @@
         }
 
         renderFeedCards(res.rows);
-        updateWeekdayStrip(res.rows);
+        updateWeekdayStrip(res.weekCounts);
       }
       if (typeof callback === 'function') callback(res);
     });
   }
 
+  // --- Modal Dialog Semantics & Focus Management ---
+  function getModalBox(modalEl) {
+    return modalEl ? modalEl.querySelector('.modal-box') : null;
+  }
+
+  function getFocusable(container) {
+    var list = [];
+    if (!container) return list;
+    var nodes = container.querySelectorAll(FOCUSABLE_SELECTOR);
+    for (var i = 0; i < nodes.length; i++) {
+      // Skip elements hidden by CSS (offsetParent is null for display:none).
+      if (nodes[i].offsetParent === null) continue;
+      list.push(nodes[i]);
+    }
+    return list;
+  }
+
+  function getVisibleModal() {
+    return document.querySelector('.modal-overlay.visible');
+  }
+
+  // The modals live inside .app-container, so inert only its other children.
+  function setBackgroundInert(activeModal, isInert) {
+    var container = document.querySelector('.app-container');
+    if (!container) return;
+    var children = container.children;
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
+      if (!child || child === activeModal || child.contains(activeModal)) continue;
+      // Keep the toast layer active so live-region announcements and the Undo
+      // button still work while a dialog is open.
+      if (child.classList && child.classList.contains('toast-container')) continue;
+      if ('inert' in child) {
+        child.inert = isInert;
+      } else if (isInert) {
+        child.setAttribute('inert', '');
+      } else {
+        child.removeAttribute('inert');
+      }
+    }
+  }
+
+  function openModal(modalEl) {
+    if (!modalEl) return;
+    state.lastFocused = document.activeElement || null;
+    modalEl.classList.add('visible');
+    setBackgroundInert(modalEl, true);
+
+    var box = getModalBox(modalEl);
+    var focusables = getFocusable(box);
+    if (focusables.length > 0) {
+      focusables[0].focus();
+    } else if (box) {
+      if (!box.hasAttribute('tabindex')) box.setAttribute('tabindex', '-1');
+      box.focus();
+    }
+  }
+
+  function closeModal(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.remove('visible');
+    setBackgroundInert(modalEl, false);
+
+    var restoreTo = state.lastFocused;
+    state.lastFocused = null;
+    if (restoreTo && typeof restoreTo.focus === 'function' && document.contains(restoreTo)) {
+      restoreTo.focus();
+    }
+  }
+
+  // Keep Tab / Shift+Tab cycling inside the open dialog.
+  function trapModalFocus(e, modalEl) {
+    var box = getModalBox(modalEl);
+    if (!box) return;
+    var focusables = getFocusable(box);
+    if (focusables.length === 0) {
+      e.preventDefault();
+      box.focus();
+      return;
+    }
+    var first = focusables[0];
+    var last = focusables[focusables.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first || document.activeElement === box) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (document.activeElement === last || document.activeElement === box) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   function openHistoryModal() {
     el.historyList.innerHTML = '<div style="text-align:center;padding:12px;">Loading today\'s entries...</div>';
-    el.historyModal.classList.add('visible');
+    openModal(el.historyModal);
     refreshTodayFeed();
   }
 
@@ -1055,7 +1261,7 @@
         statusEl.style.color = 'var(--text-muted)';
       }
     }
-    el.settingsModal.classList.add('visible');
+    openModal(el.settingsModal);
   }
 
   function handleSaveSettings(e) {
@@ -1072,9 +1278,10 @@
     localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
     callBackend('saveSettings', state.settings, function() {
       showToast('Settings saved successfully.', 'info');
-      el.settingsModal.classList.remove('visible');
-      // Refresh config if URL changed
-      loadInitialConfig();
+      closeModal(el.settingsModal);
+      // Refresh config only — the clock sync is already initialised and must not
+      // register a second set of listeners/intervals.
+      refreshConfig();
     });
   }
 
@@ -1092,6 +1299,18 @@
       return;
     }
 
+    // Single exit point: the button can never stay stuck on "Testing...".
+    var finish = function(message, color) {
+      if (testBtn) {
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test Connection';
+      }
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.color = color;
+      }
+    };
+
     if (testBtn) {
       testBtn.disabled = true;
       testBtn.textContent = 'Testing...';
@@ -1101,28 +1320,19 @@
       statusEl.style.color = 'var(--primary)';
     }
 
-    callBackend('testSpreadsheet', { url: targetUrl }, function(res) {
-      if (testBtn) {
-        testBtn.disabled = false;
-        testBtn.textContent = 'Test Connection';
-      }
-      if (res && res.success) {
-        statusEl.textContent = 'Connected! ' + (res.message || '');
-        statusEl.style.color = 'var(--success)';
-      } else {
-        statusEl.textContent = 'Error: ' + (res ? res.error : 'Connection failed');
-        statusEl.style.color = 'var(--danger)';
-      }
-    }, function(err) {
-      if (testBtn) {
-        testBtn.disabled = false;
-        testBtn.textContent = 'Test Connection';
-      }
-      if (statusEl) {
-        statusEl.textContent = 'Error connecting to server';
-        statusEl.style.color = 'var(--danger)';
-      }
-    });
+    try {
+      callBackend('testSpreadsheet', { url: targetUrl }, function(res) {
+        if (res && res.success) {
+          finish('Connected! ' + (res.message || ''), 'var(--success)');
+        } else {
+          finish('Error: ' + (res ? res.error : 'Connection failed'), 'var(--danger)');
+        }
+      }, function(err) {
+        finish('Error connecting to server' + (err && err.message ? ': ' + err.message : ''), 'var(--danger)');
+      });
+    } catch (err) {
+      finish('Error connecting to server', 'var(--danger)');
+    }
   }
 
   function handleDeviceCsvImport() {
@@ -1142,8 +1352,8 @@
       if (res && res.success) {
         el.csvImportResult.textContent = 'Added: ' + res.addedCount + ' new hostnames, Skipped duplicates: ' + res.skippedCount;
         el.csvImportResult.style.color = 'var(--success)';
-        // Refresh devices list
-        loadInitialConfig();
+        // Refresh devices list (config only — no clock re-init)
+        refreshConfig();
       } else {
         el.csvImportResult.textContent = 'Error: ' + (res ? res.error : 'Import failed');
         el.csvImportResult.style.color = 'var(--danger)';
@@ -1152,13 +1362,8 @@
   }
 
   // --- Initial Configuration Loader ---
-  function loadInitialConfig() {
-    // 1. Clock Sync
-    ClockSync.initAutoSync(function(onSuccess, onFailure) {
-      callBackend('serverTime', null, onSuccess, onFailure);
-    });
-
-    // 2. Fetch sheet metadata & validation
+  // Fetches sheet metadata & validation only (safe to re-run any time).
+  function refreshConfig() {
     callBackend('getConfig', null, function(res) {
       if (res && res.success) {
         if (res.dropdownOptions) {
@@ -1191,6 +1396,16 @@
         }
       }
     });
+  }
+
+  function loadInitialConfig() {
+    // 1. Clock Sync (registers its listeners once)
+    ClockSync.initAutoSync(function(onSuccess, onFailure) {
+      callBackend('serverTime', null, onSuccess, onFailure);
+    });
+
+    // 2. Fetch sheet metadata & validation
+    refreshConfig();
 
     // 3. Update today rows & live activity feed
     refreshTodayFeed();
@@ -1199,6 +1414,9 @@
   // --- App Initialization ---
   function init() {
     initElements();
+
+    // Remember the pristine Save button markup (icon + Ctrl+Enter hint).
+    SAVE_LABEL_HTML = el.btnSave ? el.btnSave.innerHTML : '';
 
     // Load offline queue & settings from localStorage
     loadOfflineQueue();
@@ -1292,9 +1510,21 @@
     // Save button
     el.btnSave.addEventListener('click', handleSave);
 
-    // Keyboard shortcut: Ctrl+Enter or Cmd+Enter to Save (FR-01)
+    // Keyboard shortcuts: Ctrl/Cmd+Enter saves; dialogs own Escape and Tab.
     document.addEventListener('keydown', function(e) {
+      var activeModal = getVisibleModal();
+      if (activeModal) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeModal(activeModal);
+        } else if (e.key === 'Tab') {
+          trapModalFocus(e, activeModal);
+        }
+        return;
+      }
+
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        if (state.saving) return;
         e.preventDefault();
         handleSave();
       }
@@ -1316,9 +1546,15 @@
       localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
     });
 
-    // Modal close buttons
-    el.btnCloseSettings.addEventListener('click', function() { el.settingsModal.classList.remove('visible'); });
-    el.btnCloseHistory.addEventListener('click', function() { el.historyModal.classList.remove('visible'); });
+    // Modal close buttons & backdrop dismissal
+    el.btnCloseSettings.addEventListener('click', function() { closeModal(el.settingsModal); });
+    el.btnCloseHistory.addEventListener('click', function() { closeModal(el.historyModal); });
+    [el.settingsModal, el.historyModal].forEach(function(modalEl) {
+      if (!modalEl) return;
+      modalEl.addEventListener('click', function(e) {
+        if (e.target === modalEl) closeModal(modalEl);
+      });
+    });
     el.formSettings.addEventListener('submit', handleSaveSettings);
     var btnTest = document.getElementById('btnTestSpreadsheet');
     if (btnTest) btnTest.addEventListener('click', handleTestSpreadsheetConnection);

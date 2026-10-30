@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Task Logger</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z'/></svg>">
   <style>
@@ -12,13 +12,17 @@
   --card-bg: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --border-color: #e2e8f0;
   --border-focus: #3b82f6;
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --primary-active: #1e40af;
   --primary-fg: #ffffff;
+  /* Primary CTA surface: white text must stay >= 4.5:1 in both themes */
+  --primary-cta-bg: #2563eb;
+  --primary-cta-hover: #1d4ed8;
+  --primary-cta-active: #1e40af;
   --accent: #0ea5e9;
   --success: #10b981;
   --warning: #f59e0b;
@@ -30,6 +34,17 @@
   --badge-auto-text: #065f46;
   --badge-manual-bg: #fffbeb;
   --badge-manual-text: #92400e;
+  --status-bg: #fef3c7;
+  --status-text: #92400e;
+  --status-border: #fde68a;
+  --new-device-bg: #fef3c7;
+  --new-device-text: #92400e;
+  --cat-support-bg: #dbeafe;
+  --cat-support-text: #1d4ed8;
+  --cat-cr-bg: #fef3c7;
+  --cat-cr-text: #92400e;
+  --cat-incident-bg: #fee2e2;
+  --cat-incident-text: #b91c1c;
   --radius: 8px;
   --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
@@ -41,12 +56,20 @@
     --card-bg: #151d2f;
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
-    --text-muted: #64748b;
+    --text-muted: #94a3b8;
     --border-color: #243048;
     --border-focus: #60a5fa;
     --primary: #3b82f6;
     --primary-hover: #60a5fa;
     --primary-active: #2563eb;
+    --primary-fg: #ffffff;
+    --primary-cta-bg: #1d4ed8;
+    --primary-cta-hover: #1e40af;
+    --primary-cta-active: #1e3a8a;
+    --accent: #0ea5e9;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
     --chip-bg: #1c273e;
     --chip-active: #1e3a8a;
     --chip-text: #bfdbfe;
@@ -54,6 +77,17 @@
     --badge-auto-text: #a7f3d0;
     --badge-manual-bg: #78350f;
     --badge-manual-text: #fde68a;
+    --status-bg: #78350f;
+    --status-text: #fef3c7;
+    --status-border: #92400e;
+    --new-device-bg: #78350f;
+    --new-device-text: #fde68a;
+    --cat-support-bg: #1e3a8a;
+    --cat-support-text: #bfdbfe;
+    --cat-cr-bg: #78350f;
+    --cat-cr-text: #fde68a;
+    --cat-incident-bg: #7f1d1d;
+    --cat-incident-text: #fecaca;
     --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   }
@@ -64,11 +98,20 @@ body.dark-mode {
   --card-bg: #151d2f;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
+  --text-muted: #94a3b8;
   --border-color: #243048;
   --border-focus: #60a5fa;
   --primary: #3b82f6;
   --primary-hover: #60a5fa;
+  --primary-active: #2563eb;
+  --primary-fg: #ffffff;
+  --primary-cta-bg: #1d4ed8;
+  --primary-cta-hover: #1e40af;
+  --primary-cta-active: #1e3a8a;
+  --accent: #0ea5e9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
   --chip-bg: #1c273e;
   --chip-active: #1e3a8a;
   --chip-text: #bfdbfe;
@@ -76,6 +119,19 @@ body.dark-mode {
   --badge-auto-text: #a7f3d0;
   --badge-manual-bg: #78350f;
   --badge-manual-text: #fde68a;
+  --status-bg: #78350f;
+  --status-text: #fef3c7;
+  --status-border: #92400e;
+  --new-device-bg: #78350f;
+  --new-device-text: #fde68a;
+  --cat-support-bg: #1e3a8a;
+  --cat-support-text: #bfdbfe;
+  --cat-cr-bg: #78350f;
+  --cat-cr-text: #fde68a;
+  --cat-incident-bg: #7f1d1d;
+  --cat-incident-text: #fecaca;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 body.light-mode {
@@ -83,11 +139,30 @@ body.light-mode {
   --card-bg: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --border-color: #e2e8f0;
+  --border-focus: #3b82f6;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-fg: #ffffff;
+  --primary-cta-bg: #2563eb;
+  --primary-cta-hover: #1d4ed8;
+  --primary-cta-active: #1e40af;
   --chip-bg: #f1f5f9;
   --chip-active: #dbeafe;
   --chip-text: #1e3a8a;
+  --status-bg: #fef3c7;
+  --status-text: #92400e;
+  --status-border: #fde68a;
+  --new-device-bg: #fef3c7;
+  --new-device-text: #92400e;
+  --cat-support-bg: #dbeafe;
+  --cat-support-text: #1d4ed8;
+  --cat-cr-bg: #fef3c7;
+  --cat-cr-text: #92400e;
+  --cat-incident-bg: #fee2e2;
+  --cat-incident-text: #b91c1c;
 }
 
 * {
@@ -109,6 +184,50 @@ body {
   max-width: 1240px;
   margin: 0 auto;
   padding: 12px 18px;
+}
+
+/* Accessibility utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 8px;
+  z-index: 400;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Responsive Dashboard Layout (Desktop / Laptop First) */
@@ -267,6 +386,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 6px 2px 8px 2px;
 }
 
@@ -274,12 +395,16 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .logo-title h1 {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .clock-display {
@@ -289,6 +414,12 @@ body {
   background: var(--chip-bg);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+@media (max-width: 420px) {
+  .clock-display {
+    display: none;
+  }
 }
 
 .header-actions {
@@ -356,8 +487,8 @@ body {
 }
 
 .weekday-count.has-entries {
-  background: var(--primary);
-  color: #fff;
+  background: var(--primary-cta-bg);
+  color: var(--primary-fg);
 }
 
 .weekday-count.today {
@@ -374,20 +505,14 @@ body {
   display: none;
   align-items: center;
   justify-content: space-between;
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fde68a;
+  background: var(--status-bg);
+  color: var(--status-text);
+  border: 1px solid var(--status-border);
   border-radius: var(--radius);
   padding: 6px 10px;
   margin-bottom: 8px;
   font-size: 0.8rem;
   font-weight: 500;
-}
-
-body.dark-mode .status-banner {
-  background: #78350f;
-  color: #fef3c7;
-  border-color: #92400e;
 }
 
 .status-banner.visible {
@@ -486,17 +611,34 @@ body.dark-mode .status-banner {
   background: var(--card-bg);
 }
 
-/* 3-way Category Toggle */
+/* 3-way Category Toggle (fieldset keeps the radios in the tab order) */
 .segmented-control {
   display: flex;
+  flex-wrap: wrap;
   background: var(--chip-bg);
   border-radius: var(--radius);
   padding: 2px;
   border: 1px solid var(--border-color);
+  margin: 0;
+  min-width: 0;
+}
+
+.segmented-control legend {
+  flex: 0 0 100%;
+  width: 100%;
+  padding: 0;
 }
 
 .segmented-control input[type="radio"] {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .segmented-control label {
@@ -515,6 +657,11 @@ body.dark-mode .status-banner {
   background: var(--card-bg);
   color: var(--primary);
   box-shadow: var(--shadow);
+}
+
+.segmented-control input[type="radio"]:focus-visible + label {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 /* Time Duration Row */
@@ -592,6 +739,14 @@ body.dark-mode .status-banner {
 }
 .chips-row::-webkit-scrollbar { display: none; }
 
+@media (max-width: 480px) {
+  .chips-row,
+  .chips-container {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}
+
 .chip-btn {
   background: var(--chip-bg);
   border: 1px solid var(--border-color);
@@ -610,6 +765,12 @@ body.dark-mode .status-banner {
 }
 
 /* Timer Control Button */
+.timer-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
 .timer-btn {
   display: flex;
   align-items: center;
@@ -744,8 +905,8 @@ body.dark-mode .status-banner {
 
 .new-device-badge {
   font-size: 0.65rem;
-  background: #fef3c7;
-  color: #b45309;
+  background: var(--new-device-bg);
+  color: var(--new-device-text);
   padding: 1px 4px;
   border-radius: 3px;
   font-weight: 600;
@@ -782,12 +943,6 @@ body.dark-mode .status-banner {
   display: block;
 }
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
 /* Primary Action Buttons */
 .action-buttons {
   margin-top: 10px;
@@ -798,7 +953,7 @@ body.dark-mode .status-banner {
 .btn-save {
   flex: 1;
   height: 44px; /* 44px minimum tap target for accessibility */
-  background: var(--primary);
+  background: var(--primary-cta-bg);
   color: var(--primary-fg);
   border: none;
   border-radius: var(--radius);
@@ -814,11 +969,11 @@ body.dark-mode .status-banner {
 }
 
 .btn-save:hover {
-  background: var(--primary-hover);
+  background: var(--primary-cta-hover);
 }
 
 .btn-save:active {
-  background: var(--primary-active);
+  background: var(--primary-cta-active);
   transform: translateY(1px);
 }
 
@@ -835,7 +990,7 @@ body.dark-mode .status-banner {
   right: 12px;
   max-width: 500px;
   margin: 0 auto;
-  z-index: 100;
+  z-index: 300; /* above .modal-overlay (200) so undo stays reachable */
   pointer-events: none;
 }
 
@@ -853,6 +1008,10 @@ body.dark-mode .status-banner {
   animation: slideUp 0.2s ease-out;
 }
 
+.toast > span {
+  overflow-wrap: anywhere;
+}
+
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -867,8 +1026,8 @@ body.dark-mode .status-banner {
 }
 
 .btn-undo {
-  background: #3b82f6;
-  color: #fff;
+  background: var(--primary-cta-bg);
+  color: var(--primary-fg);
   border: none;
   border-radius: 4px;
   padding: 5px 10px;
@@ -878,7 +1037,7 @@ body.dark-mode .status-banner {
 }
 
 .btn-undo:hover {
-  background: #2563eb;
+  background: var(--primary-cta-hover);
 }
 
 /* Modals (Settings, Today's list) */
@@ -921,6 +1080,7 @@ body.dark-mode .status-banner {
 .modal-title {
   font-size: 1.05rem;
   font-weight: 700;
+  margin: 0;
 }
 
 .btn-close {
@@ -951,17 +1111,20 @@ body.dark-mode .status-banner {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
+  min-width: 0;
 }
 
 .entry-card-title {
   font-size: 0.88rem;
   font-weight: 700;
   margin: 2px 0;
+  overflow-wrap: anywhere;
 }
 
 .entry-card-meta {
   font-size: 0.78rem;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .category-chip {
@@ -973,25 +1136,25 @@ body.dark-mode .status-banner {
 }
 
 .category-chip.support {
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--primary);
+  background: var(--cat-support-bg);
+  color: var(--cat-support-text);
 }
 
 .category-chip.cr {
-  background: rgba(245, 158, 11, 0.18);
-  color: #b45309;
+  background: var(--cat-cr-bg);
+  color: var(--cat-cr-text);
 }
 
 .category-chip.incident {
-  background: rgba(239, 68, 68, 0.18);
-  color: #b91c1c;
+  background: var(--cat-incident-bg);
+  color: var(--cat-incident-text);
 }
 
 
 </style>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#taskForm">Skip to form</a>
   <div class="app-container">
 
     <!-- Header & App Bar -->
@@ -1021,7 +1184,7 @@ body.dark-mode .status-banner {
     </header>
 
     <!-- Weekday Coverage Strip (Mon-Fri) -->
-    <div class="weekday-strip" id="weekdayStrip">
+    <div class="weekday-strip" id="weekdayStrip" role="list" aria-label="Entries logged this week">
       <div class="weekday-col"><span class="weekday-name">Mon</span><div class="weekday-count">0</div></div>
       <div class="weekday-col"><span class="weekday-name">Tue</span><div class="weekday-count">0</div></div>
       <div class="weekday-col"><span class="weekday-name">Wed</span><div class="weekday-count">0</div></div>
@@ -1032,7 +1195,7 @@ body.dark-mode .status-banner {
     <!-- Offline / Sync Status Banner -->
     <div class="status-banner" id="statusBanner">
       <span class="pulse-dot"></span>
-      <span id="statusBannerText">Offline (0 Pending)</span>
+      <span id="statusBannerText" aria-live="polite">Offline (0 Pending)</span>
     </div>
 
     <!-- Quick Presets -->
@@ -1051,7 +1214,7 @@ body.dark-mode .status-banner {
             <!-- Task Field with Autocomplete & Dropdown -->
             <div class="form-group">
               <label class="form-label" for="inputTask">
-                <span>Task <span style="color:var(--danger)">*</span></span>
+                <span>Task <span style="color:var(--danger)" aria-hidden="true">*</span><span class="sr-only">(required)</span></span>
               </label>
               <div class="combobox-wrapper">
                 <input type="text" id="inputTask" class="form-input combobox-input" placeholder="e.g. Cek Endpoint Cabang" required autocomplete="off" aria-autocomplete="list" aria-controls="taskList">
@@ -1065,7 +1228,7 @@ body.dark-mode .status-banner {
             <!-- Action Field with Autocomplete & Dropdown -->
             <div class="form-group">
               <label class="form-label" for="inputAction">
-                <span>Action <span style="color:var(--danger)">*</span></span>
+                <span>Action <span style="color:var(--danger)" aria-hidden="true">*</span><span class="sr-only">(required)</span></span>
               </label>
               <div class="combobox-wrapper">
                 <input type="text" id="inputAction" class="form-input combobox-input" placeholder="e.g. Cek disabled user dan learned MAC Address" required autocomplete="off" aria-autocomplete="list" aria-controls="actionList">
@@ -1082,7 +1245,7 @@ body.dark-mode .status-banner {
             <!-- Impacted Device [Hostname] Field with Autocomplete -->
             <div class="form-group">
               <label class="form-label" for="inputHostname">
-                <span>Impacted Device [Hostname] <span style="color:var(--danger)">*</span></span>
+                <span>Impacted Device [Hostname] <span style="color:var(--danger)" aria-hidden="true">*</span><span class="sr-only">(required)</span></span>
                 <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
               </label>
               <div class="combobox-wrapper">
@@ -1096,15 +1259,15 @@ body.dark-mode .status-banner {
 
             <!-- Category 3-way Toggle -->
             <div class="form-group">
-              <label class="form-label">Category</label>
-              <div class="segmented-control">
+              <fieldset class="segmented-control">
+                <legend class="form-label">Category</legend>
                 <input type="radio" name="category" id="catSupport" value="SUPPORT" checked>
                 <label for="catSupport">SUPPORT</label>
                 <input type="radio" name="category" id="catCr" value="CR">
                 <label for="catCr">CR</label>
                 <input type="radio" name="category" id="catIncident" value="INCIDENT">
                 <label for="catIncident">INCIDENT</label>
-              </div>
+              </fieldset>
             </div>
           </div>
 
@@ -1139,7 +1302,7 @@ body.dark-mode .status-banner {
             </div>
           </div>
 
-          <!-- Quick Duration Chips & Timer Mode -->
+          <!-- Quick Duration Chips -->
           <div class="chips-row" id="chipsContainer">
             <button type="button" class="chip-btn" data-min="1">+1m</button>
             <button type="button" class="chip-btn" data-min="5">+5m</button>
@@ -1148,7 +1311,6 @@ body.dark-mode .status-banner {
             <button type="button" class="chip-btn" data-min="30">+30m</button>
             <button type="button" class="chip-btn" data-min="60">+60m</button>
             <button type="button" class="chip-btn" data-min="90">+90m</button>
-            <button type="button" class="timer-btn" id="timerBtn" title="Start persistent task timer">&#9654; Timer</button>
           </div>
 
           <!-- Collapsible Section for Mobile, Expanded Grid for Desktop -->
@@ -1228,6 +1390,11 @@ body.dark-mode .status-banner {
             </div>
           </div>
 
+          <!-- Timer Mode (own row so it stays reachable at 360px) -->
+          <div class="timer-row">
+            <button type="button" class="timer-btn" id="timerBtn" title="Start persistent task timer">&#9654; Timer</button>
+          </div>
+
           <!-- Save Button -->
           <div class="action-buttons">
             <button type="button" class="btn-save" id="btnSave">
@@ -1272,20 +1439,20 @@ body.dark-mode .status-banner {
 
           <!-- Live Desktop Feed List -->
           <div class="desktop-feed-list" id="desktopFeedList">
-            <div class="feed-empty">No tasks logged today yet.<br>Submit your first entry on the left!</div>
+            <div class="feed-empty">No entries yet today — log your first task above.</div>
           </div>
         </div>
       </aside>
     </main>
 
     <!-- Floating Toast Notification with Undo -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Today's Entries Modal -->
-    <div class="modal-overlay" id="historyModal">
+    <div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
       <div class="modal-box">
         <div class="modal-header">
-          <span class="modal-title">Today's Entries</span>
+          <h2 class="modal-title" id="historyTitle">Today's Entries</h2>
           <span id="historyTotal" style="font-size:0.8rem;color:var(--text-muted);margin-left:auto;margin-right:12px;"></span>
           <button type="button" class="btn-close" id="btnCloseHistory" aria-label="Close today's entries dialog">&times;</button>
         </div>
@@ -1294,10 +1461,10 @@ body.dark-mode .status-banner {
     </div>
 
     <!-- Settings & CSV Import Modal -->
-    <div class="modal-overlay" id="settingsModal">
+    <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="modal-box">
         <div class="modal-header">
-          <span class="modal-title">Settings & Devices</span>
+          <h2 class="modal-title" id="settingsTitle">Settings & Devices</h2>
           <button type="button" class="btn-close" id="btnCloseSettings" aria-label="Close settings dialog">&times;</button>
         </div>
 
@@ -1315,7 +1482,7 @@ body.dark-mode .status-banner {
               <button type="button" id="btnTestSpreadsheet" class="chip-btn" style="padding:4px 10px;font-size:0.75rem;background:var(--card-bg);">
                 Test Connection
               </button>
-              <span id="spreadsheetConnectionStatus" style="font-size:0.75rem;font-weight:600;"></span>
+              <span id="spreadsheetConnectionStatus" aria-live="polite" style="font-size:0.75rem;font-weight:600;"></span>
             </div>
           </div>
 
@@ -1364,7 +1531,7 @@ body.dark-mode .status-banner {
           <button type="button" id="btnImportCsv" class="btn-save" style="height:36px;font-size:0.88rem;background:var(--accent);">
             Import to Devices Tab
           </button>
-          <div id="csvImportResult" style="font-size:0.8rem;margin-top:6px;"></div>
+          <div id="csvImportResult" aria-live="polite" style="font-size:0.8rem;margin-top:6px;"></div>
         </div>
       </div>
     </div>
@@ -1608,8 +1775,41 @@ body.dark-mode .status-banner {
     return h + ':' + m;
   }
 
+  /**
+   * Day-of-week index for a Google Sheets serial (0 = Sunday ... 6 = Saturday).
+   * Serial 0 is 1899-12-30 (Saturday); serial 2 is 1900-01-01 (Monday).
+   */
+  function weekdayIndexFromSerial(serial) {
+    var n = Math.round(serial);
+    return ((n % 7) + 6) % 7;
+  }
+
+  /**
+   * Count entries per weekday (Mon..Sun) for the ISO week containing todaySerial.
+   */
+  function weekCountsFromSerials(serials, todaySerial) {
+    var keysByIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+    var todayIdx = weekdayIndexFromSerial(todaySerial);
+    // Monday of the current week (Sunday belongs to the week that started 6 days earlier)
+    var mondaySerial = Math.round(todaySerial) - (todayIdx === 0 ? 6 : todayIdx - 1);
+    var list = serials || [];
+
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      if (typeof s !== 'number' || isNaN(s)) continue;
+      var rounded = Math.round(s);
+      if (rounded < mondaySerial || rounded > mondaySerial + 6) continue;
+      counts[keysByIndex[weekdayIndexFromSerial(rounded)]]++;
+    }
+
+    return counts;
+  }
+
   return {
     dateToSerial: dateToSerial,
+    weekdayIndexFromSerial: weekdayIndexFromSerial,
+    weekCountsFromSerials: weekCountsFromSerials,
     timeToFraction: timeToFraction,
     serialToDateStr: serialToDateStr,
     fractionToTimeStr: fractionToTimeStr,
@@ -1646,6 +1846,10 @@ body.dark-mode .status-banner {
   var isSynced = false;
   var lastSyncTime = 0;
   var SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+  // Auto-sync is registered at most once per page lifetime.
+  var autoSyncInitialized = false;
+  var autoSyncTeardown = null;
 
   /**
    * Calculate clock offset using NTP-style round-trip time
@@ -1703,33 +1907,63 @@ body.dark-mode .status-banner {
   }
 
   /**
-   * Sets up periodic re-sync every 5 minutes and on window focus/tab visibility
+   * Sets up periodic re-sync every 5 minutes and on window focus/tab visibility.
+   * Safe to call repeatedly: listeners/intervals are registered only once.
+   * @returns {Function} teardown that removes listeners and stops the interval
    */
   function initAutoSync(fetchServerTimeFn) {
+    // Already wired up — do not stack another set of listeners or intervals.
+    if (autoSyncInitialized) {
+      return autoSyncTeardown;
+    }
+    autoSyncInitialized = true;
+
     // Initial sync
     sync(fetchServerTimeFn);
 
-    // Sync on window focus / visibility change
+    var intervalId = null;
+
+    var focusHandler = function() {
+      if (Date.now() - lastSyncTime > 30000) { // throttle to 30s
+        sync(fetchServerTimeFn);
+      }
+    };
+
+    var visibilityHandler = function() {
+      if (!document.hidden && (Date.now() - lastSyncTime > 30000)) {
+        sync(fetchServerTimeFn);
+      }
+    };
+
     if (typeof window !== 'undefined') {
-      window.addEventListener('focus', function() {
-        if (Date.now() - lastSyncTime > 30000) { // throttle to 30s
-          sync(fetchServerTimeFn);
-        }
-      });
+      window.addEventListener('focus', focusHandler);
 
       if (typeof document !== 'undefined') {
-        document.addEventListener('visibilitychange', function() {
-          if (!document.hidden && (Date.now() - lastSyncTime > 30000)) {
-            sync(fetchServerTimeFn);
-          }
-        });
+        document.addEventListener('visibilitychange', visibilityHandler);
       }
 
       // Interval sync every 5 minutes
-      setInterval(function() {
+      intervalId = setInterval(function() {
         sync(fetchServerTimeFn);
       }, SYNC_INTERVAL_MS);
     }
+
+    autoSyncTeardown = function() {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', focusHandler);
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', visibilityHandler);
+      }
+      autoSyncInitialized = false;
+      autoSyncTeardown = null;
+    };
+
+    return autoSyncTeardown;
   }
 
   return {
@@ -1915,8 +2149,9 @@ body.dark-mode .status-banner {
 
     // Offline & Undo
     offlineQueue: [],
-    lastSavedEntry: null,
-    undoTimeoutId: null,
+    saving: false,
+    undo: { toast: null, timerId: null, entry: null, rowNumber: null },
+    lastFocused: null,
 
     // Weekday counts
     weekdayCounts: { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 }
@@ -1924,6 +2159,18 @@ body.dark-mode .status-banner {
 
   // --- DOM Elements ---
   var el = {};
+
+  // Original Save button markup, captured once in init() so the icon and the
+  // "(Ctrl+Enter)" hint survive every save attempt.
+  var SAVE_LABEL_HTML = '';
+
+  // Save watchdog: never leave the form stuck in the "Saving..." state.
+  var SAVE_WATCHDOG_MS = 20000;
+
+  // Undo toast lifetime
+  var UNDO_SECONDS = 30;
+
+  var FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
   // HTML sanitization helper to prevent Stored XSS (CWE-79)
   function escapeHtml(str) {
@@ -2023,29 +2270,40 @@ body.dark-mode .status-banner {
 
   // --- Backend Wrapper (Supports google.script.run and Local Mock) ---
   function callBackend(methodName, args, onSuccess, onFailure) {
-    if (window.google && window.google.script && window.google.script.run) {
-      var runner = window.google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFailure || function(err) {
-          showToast('Server error: ' + (err.message || err), 'error');
-        });
-      if (args !== undefined && args !== null) {
-        runner[methodName](args);
+    // Never throw out of a backend call: route every error through onFailure.
+    function failureHandler(prefix) {
+      return function(err) {
+        if (typeof onFailure === 'function') {
+          onFailure(err);
+          return;
+        }
+        showToast(prefix + ': ' + ((err && err.message) || err), 'error');
+      };
+    }
+
+    try {
+      if (window.google && window.google.script && window.google.script.run) {
+        var runner = window.google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(failureHandler('Server error'));
+        if (args !== undefined && args !== null) {
+          runner[methodName](args);
+        } else {
+          runner[methodName]();
+        }
+      } else if (window.__MOCK_BACKEND__) {
+        // Local development mock server
+        window.__MOCK_BACKEND__[methodName](args)
+          .then(onSuccess)
+          .catch(failureHandler('Mock server error'));
       } else {
-        runner[methodName]();
+        // Offline fallback
+        setTimeout(function() {
+          if (onFailure) onFailure(new Error('Backend unavailable (Offline)'));
+        }, 50);
       }
-    } else if (window.__MOCK_BACKEND__) {
-      // Local development mock server
-      window.__MOCK_BACKEND__[methodName](args)
-        .then(onSuccess)
-        .catch(onFailure || function(err) {
-          showToast('Mock server error: ' + (err.message || err), 'error');
-        });
-    } else {
-      // Offline fallback
-      setTimeout(function() {
-        if (onFailure) onFailure(new Error('Backend unavailable (Offline)'));
-      }, 50);
+    } catch (err) {
+      failureHandler('Backend error')(err);
     }
   }
 
@@ -2512,40 +2770,41 @@ body.dark-mode .status-banner {
   }
 
   // --- Weekday Coverage Strip (FR-12 & S4-3) ---
-  function updateWeekdayStrip(entries) {
-    var counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
-    var todayD = ClockSync.nowDate();
-    var currentDayIdx = todayD.getDay(); // 0 is Sun, 1 is Mon...
-
-    var daysMap = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', ''];
-    var todayKey = daysMap[currentDayIdx] || '';
-
-    // Count entries
-    (entries || []).forEach(function(r) {
-      var dParts = TimeUtils.parseDateParts(r.tanggal);
-      if (dParts) {
-        var d = new Date(dParts.year, dParts.month - 1, dParts.day);
-        var dayName = daysMap[d.getDay()];
-        if (dayName && counts[dayName] !== undefined) {
-          counts[dayName]++;
-        }
-      }
-    });
-
+  // weekCounts is the Mon..Sun map the backend computes for the current week in
+  // the configured timezone. Counting today's rows here made every earlier
+  // weekday look "missed", so the counts must come from the backend.
+  function updateWeekdayStrip(weekCounts) {
+    var counts = weekCounts || {};
     var keys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+    var todayKey = '';
+    try {
+      todayKey = new Intl.DateTimeFormat('en-US', {
+        timeZone: state.settings.timeZone || 'Asia/Jakarta',
+        weekday: 'short'
+      }).format(ClockSync.nowDate());
+    } catch (e) {
+      todayKey = '';
+    }
+
+    var todayIdx = keys.indexOf(todayKey);
+    var isWeekend = todayKey === 'Sat' || todayKey === 'Sun';
+
     var html = '';
     keys.forEach(function(k, idx) {
-      var c = counts[k];
+      var c = Number(counts[k] || 0);
       var isToday = k === todayKey;
-      var isPast = (idx + 1) < currentDayIdx;
+      // Weekend days do not belong to the Mon-Fri coverage window.
+      var isPast = !isWeekend && todayIdx > -1 && idx < todayIdx;
       var countClass = 'weekday-count';
 
       if (c > 0) countClass += ' has-entries';
       if (isToday) countClass += ' today';
       if (isPast && c === 0) countClass += ' missed';
 
-      html += '<div class="weekday-col">' +
-        '<span class="weekday-name">' + k + '</span>' +
+      html += '<div class="weekday-col" role="listitem" aria-label="' +
+        k + ', ' + c + (c === 1 ? ' entry' : ' entries') + '">' +
+        '<span class="weekday-name" aria-hidden="true">' + k + '</span>' +
         '<div class="' + countClass + '">' + c + '</div>' +
         '</div>';
     });
@@ -2554,7 +2813,21 @@ body.dark-mode .status-banner {
   }
 
   // --- Save Workflow ---
+  function restoreSaveButton() {
+    if (!el.btnSave) return;
+    el.btnSave.disabled = false;
+    el.btnSave.removeAttribute('aria-busy');
+    el.btnSave.innerHTML = SAVE_LABEL_HTML;
+  }
+
   function handleSave() {
+    if (state.saving) return;
+    state.saving = true;
+
+    // Drop any undo timer left over from a previous save so it can never clear
+    // the state of the save we are about to register.
+    clearUndoToast();
+
     // 1. Re-stamp any field still in AUTO at this instant (Rule 6)
     var currentNow = ClockSync.nowDate();
 
@@ -2584,6 +2857,7 @@ body.dark-mode .status-banner {
     var remark = (el.inputRemark.value || '').trim();
 
     if (!task || !action || !hostname || !timeStart || !timeEnd) {
+      state.saving = false;
       showToast('Please fill all required fields.', 'warning');
       return;
     }
@@ -2603,6 +2877,7 @@ body.dark-mode .status-banner {
       if (confirmNextDay) {
         isNextDay = true;
       } else {
+        state.saving = false;
         showToast('Please adjust Start or End time.', 'warning');
         return;
       }
@@ -2612,7 +2887,10 @@ body.dark-mode .status-banner {
     var confirmLong = false;
     if (durationMin > 720) {
       confirmLong = window.confirm('Task duration is over 12 hours (' + Math.round(durationMin / 60) + 'h). Proceed?');
-      if (!confirmLong) return;
+      if (!confirmLong) {
+        state.saving = false;
+        return;
+      }
     }
 
     // Automatically register and persist any new Task or Action option for dropdown autocomplete
@@ -2653,11 +2931,21 @@ body.dark-mode .status-banner {
 
     // UI Feedback
     el.btnSave.disabled = true;
+    el.btnSave.setAttribute('aria-busy', 'true');
     el.btnSave.innerHTML = '<span class="pulse-dot"></span> Saving...';
 
+    // Watchdog: a pending save must never lock the form forever.
+    var watchdogId = setTimeout(function() {
+      if (!state.saving) return;
+      state.saving = false;
+      restoreSaveButton();
+      showToast('Still saving — check the sheet before retrying.', 'warning');
+    }, SAVE_WATCHDOG_MS);
+
     callBackend('saveEntry', payload, function(res) {
-      el.btnSave.disabled = false;
-      el.btnSave.innerHTML = 'Save Task';
+      clearTimeout(watchdogId);
+      state.saving = false;
+      restoreSaveButton();
 
       if (res && res.success) {
         showSaveSuccess(res.rowNumber, payload);
@@ -2668,12 +2956,23 @@ body.dark-mode .status-banner {
         showToast(errMsg, 'error');
       }
     }, function(err) {
-      // Offline / Network Failure: Queue locally (FR-11 & S4-2)
-      el.btnSave.disabled = false;
-      el.btnSave.innerHTML = 'Save Task';
-      enqueueOfflineSave(payload);
-      applyStickyDefaults();
-      showToast('Saved offline to queue (Pending). Will sync automatically.', 'info');
+      clearTimeout(watchdogId);
+      state.saving = false;
+      restoreSaveButton();
+
+      // Only queue when this really looks like a network/offline failure;
+      // a real backend error keeps the form populated for a retry.
+      var offline = (navigator.onLine === false) ||
+        !err ||
+        /network|offline|failed to fetch|timeout/i.test(String((err && err.message) || err));
+
+      if (offline) {
+        enqueueOfflineSave(payload);
+        applyStickyDefaults();
+        showToast('Saved offline to queue (Pending). Will sync automatically.', 'info');
+      } else {
+        showToast('Save failed: ' + String((err && err.message) || err), 'error');
+      }
     });
   }
 
@@ -2717,11 +3016,13 @@ body.dark-mode .status-banner {
     updateOfflineStatusBanner();
   }
 
-  function updateOfflineStatusBanner() {
+  function updateOfflineStatusBanner(syncFailed) {
     var count = state.offlineQueue.length;
     if (count > 0) {
       el.statusBanner.classList.add('visible');
-      el.statusBannerText.textContent = 'Pending (' + count + ') — Syncing automatically...';
+      el.statusBannerText.textContent = syncFailed
+        ? 'Pending (' + count + ') — Sync failed, will retry...'
+        : 'Pending (' + count + ') — Syncing automatically...';
     } else {
       el.statusBanner.classList.remove('visible');
     }
@@ -2731,6 +3032,16 @@ body.dark-mode .status-banner {
     if (state.offlineQueue.length === 0) return;
 
     var queueCopy = state.offlineQueue.slice();
+
+    // Persist everything from fromIndex onwards (the failed item included).
+    var persistPending = function(fromIndex, syncFailed) {
+      state.offlineQueue = queueCopy.slice(fromIndex);
+      try {
+        localStorage.setItem('offline_task_queue', JSON.stringify(state.offlineQueue));
+      } catch (e) {}
+      updateOfflineStatusBanner(syncFailed);
+    };
+
     var processNext = function(index) {
       if (index >= queueCopy.length) {
         state.offlineQueue = [];
@@ -2742,12 +3053,17 @@ body.dark-mode .status-banner {
 
       var item = queueCopy[index];
       callBackend('saveEntry', item, function(res) {
+        if (res && res.success === false) {
+          // The backend rejected this entry: keep it (and everything after it)
+          // queued instead of silently dropping the batch.
+          persistPending(index, true);
+          showToast('Offline sync failed: ' + ((res && res.error) || 'Unknown error'), 'error');
+          return;
+        }
         processNext(index + 1);
       }, function(err) {
         // Still failing, pause queue
-        state.offlineQueue = queueCopy.slice(index);
-        localStorage.setItem('offline_task_queue', JSON.stringify(state.offlineQueue));
-        updateOfflineStatusBanner();
+        persistPending(index, true);
       });
     };
 
@@ -2755,37 +3071,65 @@ body.dark-mode .status-banner {
   }
 
   // --- Undo (30s) Toast (FR-10 & S3-5) ---
+  function clearUndoToast() {
+    if (state.undo.timerId) {
+      clearInterval(state.undo.timerId);
+      state.undo.timerId = null;
+    }
+    if (state.undo.toast && state.undo.toast.parentNode) {
+      state.undo.toast.parentNode.removeChild(state.undo.toast);
+    }
+    state.undo.toast = null;
+    state.undo.entry = null;
+    state.undo.rowNumber = null;
+  }
+
+  // Removes the short-lived toasts but never the actionable Undo toast.
+  function clearTransientToasts() {
+    if (!el.toastContainer) return;
+    var nodes = el.toastContainer.querySelectorAll('.toast:not(.toast-undo)');
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+    }
+  }
+
   function showSaveSuccess(rowNumber, payload) {
-    state.lastSavedEntry = { rowNumber: rowNumber, entry: payload };
+    // A newer save replaces any older undo window.
+    clearUndoToast();
 
     var msg = 'Saved to row ' + (rowNumber || '') + '!';
     var toast = document.createElement('div');
-    toast.className = 'toast';
+    toast.className = 'toast toast-undo';
     toast.innerHTML = '<span>' + msg + '</span>' +
-      '<button class="btn-undo" id="btnUndoToast">Undo (30s)</button>';
+      '<button type="button" class="btn-undo" aria-label="Undo last save">Undo <span aria-hidden="true">(' + UNDO_SECONDS + 's)</span></button>';
 
-    el.toastContainer.innerHTML = '';
+    clearTransientToasts();
     el.toastContainer.appendChild(toast);
 
-    var undoBtn = document.getElementById('btnUndoToast');
-    var secondsLeft = 30;
+    var undoBtn = toast.querySelector('.btn-undo');
+    var secondsLabel = toast.querySelector('.btn-undo span');
+    var secondsLeft = UNDO_SECONDS;
 
-    var timer = setInterval(function() {
+    state.undo.toast = toast;
+    state.undo.entry = payload;
+    state.undo.rowNumber = rowNumber;
+
+    state.undo.timerId = setInterval(function() {
       secondsLeft--;
       if (secondsLeft > 0) {
-        undoBtn.textContent = 'Undo (' + secondsLeft + 's)';
+        if (secondsLabel) secondsLabel.textContent = '(' + secondsLeft + 's)';
       } else {
-        clearInterval(timer);
-        if (toast.parentNode) toast.parentNode.removeChild(toast);
-        state.lastSavedEntry = null;
+        clearUndoToast();
       }
     }, 1000);
 
-    undoBtn.addEventListener('click', function() {
-      clearInterval(timer);
-      handleUndo(state.lastSavedEntry);
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    });
+    if (undoBtn) {
+      undoBtn.addEventListener('click', function() {
+        var savedInfo = { rowNumber: state.undo.rowNumber, entry: state.undo.entry };
+        clearUndoToast();
+        handleUndo(savedInfo);
+      });
+    }
   }
 
   function handleUndo(savedInfo) {
@@ -2813,7 +3157,8 @@ body.dark-mode .status-banner {
     toast.className = 'toast ' + type;
     toast.textContent = message;
 
-    el.toastContainer.innerHTML = '';
+    // Only replace transient toasts — the Undo toast has its own slot.
+    clearTransientToasts();
     el.toastContainer.appendChild(toast);
 
     setTimeout(function() {
@@ -2822,11 +3167,13 @@ body.dark-mode .status-banner {
   }
 
   // --- History & Live Feed Rendering ---
+  var EMPTY_FEED_MESSAGE = 'No entries yet today — log your first task above.';
+
   function renderFeedCards(rows) {
     if (!rows || rows.length === 0) {
-      var emptyHtml = '<div class="feed-empty">No tasks logged today yet.<br>Submit your first entry on the left!</div>';
+      var emptyHtml = '<div class="feed-empty">' + EMPTY_FEED_MESSAGE + '</div>';
       if (el.desktopFeedList) el.desktopFeedList.innerHTML = emptyHtml;
-      if (el.historyList) el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">No entries logged today yet.</div>';
+      if (el.historyList) el.historyList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">' + EMPTY_FEED_MESSAGE + '</div>';
       return;
     }
 
@@ -2884,15 +3231,108 @@ body.dark-mode .status-banner {
         }
 
         renderFeedCards(res.rows);
-        updateWeekdayStrip(res.rows);
+        updateWeekdayStrip(res.weekCounts);
       }
       if (typeof callback === 'function') callback(res);
     });
   }
 
+  // --- Modal Dialog Semantics & Focus Management ---
+  function getModalBox(modalEl) {
+    return modalEl ? modalEl.querySelector('.modal-box') : null;
+  }
+
+  function getFocusable(container) {
+    var list = [];
+    if (!container) return list;
+    var nodes = container.querySelectorAll(FOCUSABLE_SELECTOR);
+    for (var i = 0; i < nodes.length; i++) {
+      // Skip elements hidden by CSS (offsetParent is null for display:none).
+      if (nodes[i].offsetParent === null) continue;
+      list.push(nodes[i]);
+    }
+    return list;
+  }
+
+  function getVisibleModal() {
+    return document.querySelector('.modal-overlay.visible');
+  }
+
+  // The modals live inside .app-container, so inert only its other children.
+  function setBackgroundInert(activeModal, isInert) {
+    var container = document.querySelector('.app-container');
+    if (!container) return;
+    var children = container.children;
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
+      if (!child || child === activeModal || child.contains(activeModal)) continue;
+      // Keep the toast layer active so live-region announcements and the Undo
+      // button still work while a dialog is open.
+      if (child.classList && child.classList.contains('toast-container')) continue;
+      if ('inert' in child) {
+        child.inert = isInert;
+      } else if (isInert) {
+        child.setAttribute('inert', '');
+      } else {
+        child.removeAttribute('inert');
+      }
+    }
+  }
+
+  function openModal(modalEl) {
+    if (!modalEl) return;
+    state.lastFocused = document.activeElement || null;
+    modalEl.classList.add('visible');
+    setBackgroundInert(modalEl, true);
+
+    var box = getModalBox(modalEl);
+    var focusables = getFocusable(box);
+    if (focusables.length > 0) {
+      focusables[0].focus();
+    } else if (box) {
+      if (!box.hasAttribute('tabindex')) box.setAttribute('tabindex', '-1');
+      box.focus();
+    }
+  }
+
+  function closeModal(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.remove('visible');
+    setBackgroundInert(modalEl, false);
+
+    var restoreTo = state.lastFocused;
+    state.lastFocused = null;
+    if (restoreTo && typeof restoreTo.focus === 'function' && document.contains(restoreTo)) {
+      restoreTo.focus();
+    }
+  }
+
+  // Keep Tab / Shift+Tab cycling inside the open dialog.
+  function trapModalFocus(e, modalEl) {
+    var box = getModalBox(modalEl);
+    if (!box) return;
+    var focusables = getFocusable(box);
+    if (focusables.length === 0) {
+      e.preventDefault();
+      box.focus();
+      return;
+    }
+    var first = focusables[0];
+    var last = focusables[focusables.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first || document.activeElement === box) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (document.activeElement === last || document.activeElement === box) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   function openHistoryModal() {
     el.historyList.innerHTML = '<div style="text-align:center;padding:12px;">Loading today\'s entries...</div>';
-    el.historyModal.classList.add('visible');
+    openModal(el.historyModal);
     refreshTodayFeed();
   }
 
@@ -2914,7 +3354,7 @@ body.dark-mode .status-banner {
         statusEl.style.color = 'var(--text-muted)';
       }
     }
-    el.settingsModal.classList.add('visible');
+    openModal(el.settingsModal);
   }
 
   function handleSaveSettings(e) {
@@ -2931,9 +3371,10 @@ body.dark-mode .status-banner {
     localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
     callBackend('saveSettings', state.settings, function() {
       showToast('Settings saved successfully.', 'info');
-      el.settingsModal.classList.remove('visible');
-      // Refresh config if URL changed
-      loadInitialConfig();
+      closeModal(el.settingsModal);
+      // Refresh config only — the clock sync is already initialised and must not
+      // register a second set of listeners/intervals.
+      refreshConfig();
     });
   }
 
@@ -2951,6 +3392,18 @@ body.dark-mode .status-banner {
       return;
     }
 
+    // Single exit point: the button can never stay stuck on "Testing...".
+    var finish = function(message, color) {
+      if (testBtn) {
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test Connection';
+      }
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.color = color;
+      }
+    };
+
     if (testBtn) {
       testBtn.disabled = true;
       testBtn.textContent = 'Testing...';
@@ -2960,28 +3413,19 @@ body.dark-mode .status-banner {
       statusEl.style.color = 'var(--primary)';
     }
 
-    callBackend('testSpreadsheet', { url: targetUrl }, function(res) {
-      if (testBtn) {
-        testBtn.disabled = false;
-        testBtn.textContent = 'Test Connection';
-      }
-      if (res && res.success) {
-        statusEl.textContent = 'Connected! ' + (res.message || '');
-        statusEl.style.color = 'var(--success)';
-      } else {
-        statusEl.textContent = 'Error: ' + (res ? res.error : 'Connection failed');
-        statusEl.style.color = 'var(--danger)';
-      }
-    }, function(err) {
-      if (testBtn) {
-        testBtn.disabled = false;
-        testBtn.textContent = 'Test Connection';
-      }
-      if (statusEl) {
-        statusEl.textContent = 'Error connecting to server';
-        statusEl.style.color = 'var(--danger)';
-      }
-    });
+    try {
+      callBackend('testSpreadsheet', { url: targetUrl }, function(res) {
+        if (res && res.success) {
+          finish('Connected! ' + (res.message || ''), 'var(--success)');
+        } else {
+          finish('Error: ' + (res ? res.error : 'Connection failed'), 'var(--danger)');
+        }
+      }, function(err) {
+        finish('Error connecting to server' + (err && err.message ? ': ' + err.message : ''), 'var(--danger)');
+      });
+    } catch (err) {
+      finish('Error connecting to server', 'var(--danger)');
+    }
   }
 
   function handleDeviceCsvImport() {
@@ -3001,8 +3445,8 @@ body.dark-mode .status-banner {
       if (res && res.success) {
         el.csvImportResult.textContent = 'Added: ' + res.addedCount + ' new hostnames, Skipped duplicates: ' + res.skippedCount;
         el.csvImportResult.style.color = 'var(--success)';
-        // Refresh devices list
-        loadInitialConfig();
+        // Refresh devices list (config only — no clock re-init)
+        refreshConfig();
       } else {
         el.csvImportResult.textContent = 'Error: ' + (res ? res.error : 'Import failed');
         el.csvImportResult.style.color = 'var(--danger)';
@@ -3011,13 +3455,8 @@ body.dark-mode .status-banner {
   }
 
   // --- Initial Configuration Loader ---
-  function loadInitialConfig() {
-    // 1. Clock Sync
-    ClockSync.initAutoSync(function(onSuccess, onFailure) {
-      callBackend('serverTime', null, onSuccess, onFailure);
-    });
-
-    // 2. Fetch sheet metadata & validation
+  // Fetches sheet metadata & validation only (safe to re-run any time).
+  function refreshConfig() {
     callBackend('getConfig', null, function(res) {
       if (res && res.success) {
         if (res.dropdownOptions) {
@@ -3050,6 +3489,16 @@ body.dark-mode .status-banner {
         }
       }
     });
+  }
+
+  function loadInitialConfig() {
+    // 1. Clock Sync (registers its listeners once)
+    ClockSync.initAutoSync(function(onSuccess, onFailure) {
+      callBackend('serverTime', null, onSuccess, onFailure);
+    });
+
+    // 2. Fetch sheet metadata & validation
+    refreshConfig();
 
     // 3. Update today rows & live activity feed
     refreshTodayFeed();
@@ -3058,6 +3507,9 @@ body.dark-mode .status-banner {
   // --- App Initialization ---
   function init() {
     initElements();
+
+    // Remember the pristine Save button markup (icon + Ctrl+Enter hint).
+    SAVE_LABEL_HTML = el.btnSave ? el.btnSave.innerHTML : '';
 
     // Load offline queue & settings from localStorage
     loadOfflineQueue();
@@ -3151,9 +3603,21 @@ body.dark-mode .status-banner {
     // Save button
     el.btnSave.addEventListener('click', handleSave);
 
-    // Keyboard shortcut: Ctrl+Enter or Cmd+Enter to Save (FR-01)
+    // Keyboard shortcuts: Ctrl/Cmd+Enter saves; dialogs own Escape and Tab.
     document.addEventListener('keydown', function(e) {
+      var activeModal = getVisibleModal();
+      if (activeModal) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeModal(activeModal);
+        } else if (e.key === 'Tab') {
+          trapModalFocus(e, activeModal);
+        }
+        return;
+      }
+
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        if (state.saving) return;
         e.preventDefault();
         handleSave();
       }
@@ -3175,9 +3639,15 @@ body.dark-mode .status-banner {
       localStorage.setItem('task_logger_settings', JSON.stringify(state.settings));
     });
 
-    // Modal close buttons
-    el.btnCloseSettings.addEventListener('click', function() { el.settingsModal.classList.remove('visible'); });
-    el.btnCloseHistory.addEventListener('click', function() { el.historyModal.classList.remove('visible'); });
+    // Modal close buttons & backdrop dismissal
+    el.btnCloseSettings.addEventListener('click', function() { closeModal(el.settingsModal); });
+    el.btnCloseHistory.addEventListener('click', function() { closeModal(el.historyModal); });
+    [el.settingsModal, el.historyModal].forEach(function(modalEl) {
+      if (!modalEl) return;
+      modalEl.addEventListener('click', function(e) {
+        if (e.target === modalEl) closeModal(modalEl);
+      });
+    });
     el.formSettings.addEventListener('submit', handleSaveSettings);
     var btnTest = document.getElementById('btnTestSpreadsheet');
     if (btnTest) btnTest.addEventListener('click', handleTestSpreadsheetConnection);

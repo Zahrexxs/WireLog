@@ -233,8 +233,41 @@
     return h + ':' + m;
   }
 
+  /**
+   * Day-of-week index for a Google Sheets serial (0 = Sunday ... 6 = Saturday).
+   * Serial 0 is 1899-12-30 (Saturday); serial 2 is 1900-01-01 (Monday).
+   */
+  function weekdayIndexFromSerial(serial) {
+    var n = Math.round(serial);
+    return ((n % 7) + 6) % 7;
+  }
+
+  /**
+   * Count entries per weekday (Mon..Sun) for the ISO week containing todaySerial.
+   */
+  function weekCountsFromSerials(serials, todaySerial) {
+    var keysByIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+    var todayIdx = weekdayIndexFromSerial(todaySerial);
+    // Monday of the current week (Sunday belongs to the week that started 6 days earlier)
+    var mondaySerial = Math.round(todaySerial) - (todayIdx === 0 ? 6 : todayIdx - 1);
+    var list = serials || [];
+
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      if (typeof s !== 'number' || isNaN(s)) continue;
+      var rounded = Math.round(s);
+      if (rounded < mondaySerial || rounded > mondaySerial + 6) continue;
+      counts[keysByIndex[weekdayIndexFromSerial(rounded)]]++;
+    }
+
+    return counts;
+  }
+
   return {
     dateToSerial: dateToSerial,
+    weekdayIndexFromSerial: weekdayIndexFromSerial,
+    weekCountsFromSerials: weekCountsFromSerials,
     timeToFraction: timeToFraction,
     serialToDateStr: serialToDateStr,
     fractionToTimeStr: fractionToTimeStr,

@@ -145,10 +145,12 @@ function handleApi(endpoint, body, res) {
     } else if (endpoint === '/api/todayRows') {
       const lastRow = taskSheet.getLastRow();
       const allRows = [];
+      const allSerials = [];
       let totalMin = 0;
 
       for (let r = 2; r <= lastRow; r++) {
         const vals = taskSheet.getRange(r, 1, 1, 14).getValues()[0];
+        if (typeof vals[1] === 'number') allSerials.push(vals[1]);
         if (vals[2]) { // has Task
           const startFrac = vals[10];
           const endFrac = vals[11];
@@ -162,6 +164,7 @@ function handleApi(endpoint, body, res) {
             rowNumber: r,
             task: vals[2],
             action: vals[3],
+            category: vals[4] || 'SUPPORT',
             hostname: vals[7],
             timeStart: TimeUtils.fractionToTimeStr(startFrac, true),
             timeEnd: TimeUtils.fractionToTimeStr(endFrac, true),
@@ -173,10 +176,21 @@ function handleApi(endpoint, body, res) {
         success: true,
         count: allRows.length,
         totalMinutes: totalMin,
-        rows: allRows
+        rows: allRows,
+        weekCounts: TimeUtils.weekCountsFromSerials(
+          allSerials,
+          TimeUtils.dateToSerial(new Date(), 'Asia/Jakarta')
+        )
       };
     } else if (endpoint === '/api/saveSettings') {
       responseData = { success: true };
+    } else if (endpoint === '/api/testSpreadsheet') {
+      const url = typeof body === 'string' ? body : ((body && (body.url || body.spreadsheetUrl)) || '');
+      if (String(url).trim()) {
+        responseData = { success: true, message: 'Connected (mock).' };
+      } else {
+        responseData = { success: false, error: 'No Spreadsheet Web App URL provided.' };
+      }
     } else if (endpoint === '/api/importDevices') {
       responseData = { success: true, addedCount: 2, skippedCount: 1 };
     }
@@ -258,6 +272,13 @@ const server = http.createServer((req, res) => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(csv)
+            }).then(r => r.json());
+          },
+          testSpreadsheet: function(payload) {
+            return fetch('/api/testSpreadsheet', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
             }).then(r => r.json());
           }
         };

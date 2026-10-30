@@ -21,6 +21,10 @@
   var lastSyncTime = 0;
   var SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
+  // Auto-sync is registered at most once per page lifetime.
+  var autoSyncInitialized = false;
+  var autoSyncTeardown = null;
+
   /**
    * Calculate clock offset using NTP-style round-trip time
    */
@@ -77,33 +81,63 @@
   }
 
   /**
-   * Sets up periodic re-sync every 5 minutes and on window focus/tab visibility
+   * Sets up periodic re-sync every 5 minutes and on window focus/tab visibility.
+   * Safe to call repeatedly: listeners/intervals are registered only once.
+   * @returns {Function} teardown that removes listeners and stops the interval
    */
   function initAutoSync(fetchServerTimeFn) {
+    // Already wired up — do not stack another set of listeners or intervals.
+    if (autoSyncInitialized) {
+      return autoSyncTeardown;
+    }
+    autoSyncInitialized = true;
+
     // Initial sync
     sync(fetchServerTimeFn);
 
-    // Sync on window focus / visibility change
+    var intervalId = null;
+
+    var focusHandler = function() {
+      if (Date.now() - lastSyncTime > 30000) { // throttle to 30s
+        sync(fetchServerTimeFn);
+      }
+    };
+
+    var visibilityHandler = function() {
+      if (!document.hidden && (Date.now() - lastSyncTime > 30000)) {
+        sync(fetchServerTimeFn);
+      }
+    };
+
     if (typeof window !== 'undefined') {
-      window.addEventListener('focus', function() {
-        if (Date.now() - lastSyncTime > 30000) { // throttle to 30s
-          sync(fetchServerTimeFn);
-        }
-      });
+      window.addEventListener('focus', focusHandler);
 
       if (typeof document !== 'undefined') {
-        document.addEventListener('visibilitychange', function() {
-          if (!document.hidden && (Date.now() - lastSyncTime > 30000)) {
-            sync(fetchServerTimeFn);
-          }
-        });
+        document.addEventListener('visibilitychange', visibilityHandler);
       }
 
       // Interval sync every 5 minutes
-      setInterval(function() {
+      intervalId = setInterval(function() {
         sync(fetchServerTimeFn);
       }, SYNC_INTERVAL_MS);
     }
+
+    autoSyncTeardown = function() {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', focusHandler);
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', visibilityHandler);
+      }
+      autoSyncInitialized = false;
+      autoSyncTeardown = null;
+    };
+
+    return autoSyncTeardown;
   }
 
   return {

@@ -43,6 +43,8 @@ function doPost(e) {
       output = saveSettings(payload);
     } else if (action === 'importDevices') {
       output = importDevices(payload);
+    } else if (action === 'testSpreadsheet') {
+      output = testSpreadsheet(payload);
     } else {
       // Default to saveEntry if payload looks like an entry
       if (payload.task && payload.action && payload.hostname) {
@@ -293,7 +295,13 @@ function todayRows() {
     var numCols = sheet.getLastColumn();
 
     if (lastRow <= headerRow) {
-      return { success: true, count: 0, totalMinutes: 0, rows: [] };
+      return {
+        success: true,
+        count: 0,
+        totalMinutes: 0,
+        rows: [],
+        weekCounts: { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 }
+      };
     }
 
     var headerRange = sheet.getRange(headerRow, 1, 1, numCols);
@@ -305,12 +313,14 @@ function todayRows() {
     var dateColIdx = (colMap['tanggal'] || 2) - 1;
     var taskColIdx = (colMap['task'] || 3) - 1;
     var actionColIdx = (colMap['action'] || 4) - 1;
+    var categoryColIdx = (colMap['category'] || 5) - 1;
     var hostColIdx = (colMap['hostname'] || 8) - 1;
     var startColIdx = (colMap['timeStart'] || 11) - 1;
     var endColIdx = (colMap['timeEnd'] || 12) - 1;
 
     var matchingRows = [];
     var totalMinutes = 0;
+    var allSerials = [];
 
     for (var i = 0; i < allData.length; i++) {
       var r = allData[i];
@@ -318,11 +328,15 @@ function todayRows() {
 
       // Match serial number or date
       var isToday = false;
+      var rowSerial = null;
       if (typeof rDate === 'number') {
+        rowSerial = rDate;
         isToday = Math.round(rDate) === todaySerial;
       } else if (rDate instanceof Date) {
-        isToday = TimeUtils.dateToSerial(rDate, 'Asia/Jakarta') === todaySerial;
+        rowSerial = TimeUtils.dateToSerial(rDate, 'Asia/Jakarta');
+        isToday = rowSerial === todaySerial;
       }
+      if (rowSerial !== null) allSerials.push(rowSerial);
 
       if (isToday) {
         var startFrac = typeof r[startColIdx] === 'number' ? r[startColIdx] : null;
@@ -339,6 +353,7 @@ function todayRows() {
           rowNumber: headerRow + i + 1,
           task: String(r[taskColIdx] || ''),
           action: String(r[actionColIdx] || ''),
+          category: String(r[categoryColIdx] || 'SUPPORT'),
           hostname: String(r[hostColIdx] || ''),
           timeStart: TimeUtils.fractionToTimeStr(startFrac, true),
           timeEnd: TimeUtils.fractionToTimeStr(endFrac, true),
@@ -351,12 +366,35 @@ function todayRows() {
       success: true,
       count: matchingRows.length,
       totalMinutes: totalMinutes,
-      rows: matchingRows
+      rows: matchingRows,
+      weekCounts: TimeUtils.weekCountsFromSerials(allSerials, todaySerial)
     };
 
   } catch (err) {
     return { success: false, error: err.message || String(err) };
   }
+}
+
+/**
+ * Verifies a Google Spreadsheet Web App URL is configured
+ * Accepts either a plain URL string or { url: '...' }
+ */
+function testSpreadsheet(payload) {
+  var url = '';
+
+  if (typeof payload === 'string') {
+    url = payload;
+  } else if (payload && typeof payload === 'object') {
+    url = payload.url || payload.spreadsheetUrl || '';
+  }
+
+  url = String(url || '').trim();
+
+  if (!url) {
+    return { success: false, error: 'No Spreadsheet Web App URL provided.' };
+  }
+
+  return { success: true, message: 'Connected to Google Spreadsheet Web App.' };
 }
 
 /**

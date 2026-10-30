@@ -21,7 +21,7 @@ const SheetOperations = require('./server/sheetOperations.js');
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 const ROOT_DIR = __dirname;
-const DATA_DIR = path.join(ROOT_DIR, 'data');
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT_DIR, 'data');
 
 // Ensure persistent data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -50,6 +50,50 @@ function saveJsonFile(filePath, data) {
   } catch (e) {
     console.error(`Error saving ${filePath}:`, e.message);
   }
+}
+
+/**
+ * Re-index rowNumber so it always mirrors the on-disk position (header is row 1).
+ * Keeps local storage consistent after inserts and undos.
+ */
+function renumberTasks() {
+  for (let i = 0; i < storedTasks.length; i++) {
+    storedTasks[i].rowNumber = i + 2;
+  }
+}
+
+/**
+ * Apply the same write-time sanitisation the Google Sheets path uses:
+ * hostname casing (honouring the server setting) and formula-injection escaping
+ * on every free-text field (CWE-1236).
+ */
+function sanitizeEntry(entry) {
+  const clean = Object.assign({}, entry);
+
+  if (clean.hostname && !storedSettings.disableUppercaseHostname) {
+    clean.hostname = String(clean.hostname).toUpperCase();
+  }
+
+  const textFields = [
+    'task', 'action', 'category', 'projectCategory', 'severity',
+    'hostname', 'status', 'requestBy', 'engineer', 'remark'
+  ];
+
+  for (const field of textFields) {
+    if (clean[field] !== undefined && clean[field] !== null) {
+      clean[field] = Validation.escapeFormula(String(clean[field]));
+    }
+  }
+
+  return clean;
+}
+
+/**
+ * Normalise a stored/entered value for comparison: trims, drops a leading
+ * formula-guard apostrophe, and lowercases.
+ */
+function normalized(value) {
+  return String(value === null || value === undefined ? '' : value).trim().replace(/^'/, '').toLowerCase();
 }
 
 let storedSettings = loadJsonFile(SETTINGS_FILE, {
@@ -285,8 +329,12 @@ async function handleApi(endpoint, body, res) {
           try {
             const remoteResult = await forwardToGoogleAppsScript(targetWebappUrl, 'saveEntry', entry);
             if (remoteResult && (remoteResult.success || remoteResult.rowNumber)) {
-              // Also store in local backup
-              storedTasks.push(Object.assign({ savedAt: new Date().toISOString(), syncedToGoogle: true }, entry));
+              // Also store in local backup, sanitised the same way as the sheet row
+              storedTasks.push(Object.assign(
+                { no: remoteResult.no, savedAt: new Date().toISOString(), syncedToGoogle: true },
+                sanitizeEntry(entry)
+              ));
+              renumberTasks();
               saveJsonFile(TASKS_FILE, storedTasks);
               return sendJson(res, remoteResult);
             }
@@ -295,29 +343,30 @@ async function handleApi(endpoint, body, res) {
           }
         }
 
-        // Local persistent save
-        const rowNumber = storedTasks.length + 2; // header is row 1
+        // Local persistent save — apply the same sanitisation and numbering the sheet path uses
+        const sanitized = sanitizeEntry(entry);
+        const nextNo = storedTasks.reduce((max, t) => Math.max(max, Number(t.no) || 0), 0) + 1;
         const record = Object.assign({
-          rowNumber: rowNumber,
-          no: storedTasks.length + 1,
+          no: nextNo,
           savedAt: new Date().toISOString(),
           syncedToGoogle: Boolean(targetWebappUrl)
-        }, entry);
+        }, sanitized);
 
         storedTasks.push(record);
+        renumberTasks();
         saveJsonFile(TASKS_FILE, storedTasks);
 
         // Auto-add new device if unregistered
-        if (entry.hostname && !storedDevices.includes(entry.hostname.toUpperCase())) {
-          storedDevices.push(entry.hostname.toUpperCase());
+        if (record.hostname && !storedDevices.includes(record.hostname)) {
+          storedDevices.push(record.hostname);
           saveJsonFile(DEVICES_FILE, storedDevices);
         }
 
         responseData = {
           success: true,
-          rowNumber: rowNumber,
+          rowNumber: record.rowNumber,
           no: record.no,
-          entry: entry,
+          entry: record,
           localOnly: !targetWebappUrl
         };
       }
@@ -337,13 +386,29 @@ async function handleApi(endpoint, body, res) {
         }
       }
 
-      // Local undo
-      if (storedTasks.length > 0) {
-        const last = storedTasks.pop();
-        saveJsonFile(TASKS_FILE, storedTasks);
-        responseData = { success: true, rowNumber: last.rowNumber || rowNum };
+      // Local undo — target the exact saved row and refuse if it was changed,
+      // mirroring SheetOperations.undoLastRow()
+      const targetIndex = storedTasks.findIndex(t =>
+        (body.uuid && t.uuid === body.uuid) || Number(t.rowNumber) === Number(rowNum)
+      );
+
+      if (rowNum === undefined || rowNum === null || targetIndex === -1) {
+        responseData = { success: false, reason: 'Row not found. Undo refused.' };
       } else {
-        responseData = { success: false, reason: 'No rows to undo.' };
+        const target = storedTasks[targetIndex];
+        const written = body.entry || {};
+        const sameTask = normalized(target.task) === normalized(written.task);
+        const sameHost = !written.hostname ||
+          normalized(target.hostname).toUpperCase() === normalized(written.hostname).toUpperCase();
+
+        if (!sameTask || !sameHost) {
+          responseData = { success: false, reason: 'Row content has been modified. Undo refused.' };
+        } else {
+          storedTasks.splice(targetIndex, 1);
+          renumberTasks();
+          saveJsonFile(TASKS_FILE, storedTasks);
+          responseData = { success: true, rowNumber: Number(rowNum) };
+        }
       }
     }
 
@@ -360,9 +425,15 @@ async function handleApi(endpoint, body, res) {
         }
       }
 
-      // Local today rows calculation
-      const todayIso = new Date().toISOString().slice(0, 10);
-      const matching = storedTasks.filter(t => t.tanggal === todayIso || (t.savedAt && t.savedAt.startsWith(todayIso)));
+      // Local today rows calculation — resolve "today" in the configured timezone,
+      // not UTC, so early-morning entries in Asia/Jakarta are not dropped.
+      const tz = storedSettings.timeZone || 'Asia/Jakarta';
+      const todayLocal = TimeUtils.formatDateForInput(new Date(), tz);
+      const matching = storedTasks.filter(t => {
+        const entryDate = t.tanggal ||
+          (t.savedAt ? TimeUtils.formatDateForInput(new Date(t.savedAt), tz) : '');
+        return entryDate === todayLocal;
+      });
 
       let totalMinutes = 0;
       const formattedRows = matching.map(r => {
@@ -377,17 +448,25 @@ async function handleApi(endpoint, body, res) {
           task: r.task,
           action: r.action,
           hostname: r.hostname,
+          category: r.category || 'SUPPORT',
           timeStart: r.timeStart,
           timeEnd: r.timeEnd,
           durationMinutes: dur
         };
       });
 
+      const serials = storedTasks.map(t => {
+        const entryDate = t.tanggal ||
+          (t.savedAt ? TimeUtils.formatDateForInput(new Date(t.savedAt), tz) : '');
+        return entryDate ? TimeUtils.dateToSerial(entryDate) : null;
+      });
+
       responseData = {
         success: true,
         count: formattedRows.length,
         totalMinutes: totalMinutes,
-        rows: formattedRows
+        rows: formattedRows,
+        weekCounts: TimeUtils.weekCountsFromSerials(serials, TimeUtils.dateToSerial(todayLocal))
       };
     }
 

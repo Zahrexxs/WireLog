@@ -6,8 +6,8 @@
 
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20(V8)-4285F4?logo=google-sheets&logoColor=white)](https://developers.google.com/apps-script)
 [![Frontend](https://img.shields.io/badge/Frontend-Vanilla%20HTML5%20%2F%20CSS3%20%2F%20ES6-E34F26?logo=html5&logoColor=white)](client/index.html)
-[![Bundle Size](https://img.shields.io/badge/Bundle%20Size-17.68%20KB%20(gzipped)-success?logo=webpack&logoColor=white)](#performance--footprint)
-[![Test Suite](https://img.shields.io/badge/Tests-21%2F21%20Passing-brightgreen?logo=jest&logoColor=white)](tests/unitTests.js)
+[![Bundle Size](https://img.shields.io/badge/Bundle%20Size-26.4%20KB%20(gzipped)-success?logo=webpack&logoColor=white)](#performance--footprint)
+[![Test Suite](https://img.shields.io/badge/Tests-36%2F36%20Passing-brightgreen?logo=jest&logoColor=white)](tests/unitTests.js)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20Native)-blueviolet)](#architecture--fixed-stack)
 
@@ -45,8 +45,8 @@ flowchart LR
 | **Repository Visibility** | `Private` |
 | **Runtime & Engines** | Google Apps Script (V8 Engine) • Node.js (v18+) for testing |
 | **Frontend Framework** | Plain Vanilla HTML5, Modern CSS3, ES6 Modules (Zero dependencies) |
-| **Production Bundle** | **17.92 KB** gzipped standalone bundle (`client/index.html`) |
-| **Test Coverage** | 24/24 Unit Tests passing (`node tests/unitTests.js`) |
+| **Production Bundle** | **26.4 KB** gzipped standalone bundle (`client/index.html`) |
+| **Test Coverage** | 36 tests passing: 27 unit (`tests/unitTests.js`) + 9 server integration (`tests/serverTests.js`) |
 | **License** | [MIT License](LICENSE) |
 
 ### 🚀 Quick Clone Commands
@@ -230,7 +230,8 @@ daily-task-logger/
 │
 ├── tests/                   # Automated Verification Suite
 │   ├── mockSpreadsheetApp.js# Mock Google Apps Script environment for Node.js
-│   ├── unitTests.js         # 21-scenario unit test runner
+│   ├── unitTests.js         # 27-scenario unit test runner
+│   ├── serverTests.js       # 9 server integration tests (spawns server.js)
 │   ├── localServer.js       # Local dev server with mock google.script.run
 │   └── e2eChecklist.md      # 20-point verification checklist
 │
@@ -247,7 +248,7 @@ daily-task-logger/
 
 You can preview the app and run all unit tests locally without deploying to Google:
 
-### 1. Run Unit Tests (21 Test Scenarios)
+### 1. Run All Tests (36 Scenarios)
 ```bash
 npm test
 # Or: node tests/unitTests.js
