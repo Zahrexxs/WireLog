@@ -17,6 +17,14 @@
 
 </div>
 
+## 📸 Preview
+
+![WireLog desktop interface](docs/screenshot.png)
+
+<sub>Desktop layout in local-storage mode. The same form stacks into a single column on mobile.</sub>
+
+---
+
 ## 📌 Overview
 
 **Daily Task Logger** replaces tedious spreadsheet entry with a modern, ergonomic web application designed laptop & desktop first with a multi-column dashboard and live activity feed, while retaining a fluid, touch-optimized mobile experience for smartphones.
