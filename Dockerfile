@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 
 # Install wget for container healthcheck
 RUN apk add --no-cache tzdata
