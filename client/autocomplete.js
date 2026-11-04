@@ -1,7 +1,7 @@
 /**
  * Daily Task Logger — Hostname Autocomplete & Fuzzy Matching
  * Matches user input against cached device inventory and past entries.
- * e.g., typing "tomang" matches "SW1_KCP JAKARTA TOMANG"
+ * e.g., typing "branch" matches "SW1_BRANCH_A"
  */
 
 (function(root, factory) {

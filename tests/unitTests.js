@@ -240,16 +240,16 @@ test('Calculates clock offset correctly given RTT and server time', () => {
 
 console.log('\n--- 6. Hostname Autocomplete & Fuzzy Search (S3-3) ---');
 
-test('Typing "tomang" matches "SW1_KCP JAKARTA TOMANG"', () => {
+test('Typing "branch" matches "SW1_BRANCH_A"', () => {
   const inventory = [
     'ROUTER_HQ_01',
-    'SW1_KCP JAKARTA TOMANG',
+    'SW1_BRANCH_A',
     'SW2_KCP BANDUNG',
     'AP_BALI_01'
   ];
-  const results = Autocomplete.search('tomang', inventory);
+  const results = Autocomplete.search('branch', inventory);
   assert(results.length > 0);
-  assert.strictEqual(results[0].hostname, 'SW1_KCP JAKARTA TOMANG');
+  assert.strictEqual(results[0].hostname, 'SW1_BRANCH_A');
 });
 
 test('Recognizes exact match vs unknown hostname', () => {

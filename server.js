@@ -61,8 +61,8 @@ let storedSettings = loadJsonFile(SETTINGS_FILE, {
 });
 
 let storedDevices = loadJsonFile(DEVICES_FILE, [
-  'SW1_KCP JAKARTA TOMANG',
-  'SW1_AREA JAMBI',
+  'SW1_BRANCH_A',
+  'SW2_BRANCH_B',
   'ROUTER_CORE_HQ'
 ]);
 

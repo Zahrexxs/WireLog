@@ -75,7 +75,7 @@ Columns are matched dynamically by header text (never hardcoded column letters).
 | 5 | **Category [CR, INCIDENT, SUPPORT]** | 3-way toggle | Sheet data validation | `SUPPORT` | Yes |
 | 6 | **Project Category** | Select | Sheet data validation (e.g. `KANTOR CABANG`) | `KANTOR CABANG` | Yes |
 | 7 | **Severity** | Select | Sheet data validation (e.g. `Minor`) | `Minor` | Yes |
-| 8 | **Impacted Device [Hostname]** | Autocomplete | `Devices` tab + distinct column values (e.g. `SW1_KCP JAKARTA TOMANG`) | Empty | Yes |
+| 8 | **Impacted Device [Hostname]** | Autocomplete | `Devices` tab + distinct column values (e.g. `SW1_BRANCH_A`) | Empty | Yes |
 | 9 | **Status** | Select | Sheet data validation (e.g. `CLOSED`) | `CLOSED` | Yes |
 | 10 | **Request by** | Select | Sheet data validation (e.g. `Desktop`, `IT REP`) | `Desktop` | Yes |
 | 11 | **Time Duration: Start** | Time input | Server clock | `End - typical duration` (Auto) | Yes |
@@ -146,7 +146,7 @@ Columns are matched dynamically by header text (never hardcoded column letters).
 | **FR-05** | P1 | Typical duration heuristic per Task & Action, quick duration chips, and persistent timer mode. | Start task -> reload page -> Finish: saved Start matches original. A task with 6, 8, 10 min history defaults to 8 min; unrecorded task defaults to 5 min. |
 | **FR-06** | P1 | Sticky defaults and Next entry mode. | After Save, Hostname and Remark are blanked; Category, Project Category, Severity, Status, Request by, and Engineer retain their values. |
 | **FR-07** | P1 | Presets for recurring tasks editable in `_Config` tab. | Tapping preset button (e.g. `Cek Endpoint Cabang`) auto-populates Task and Action. |
-| **FR-08** | P1 | Hostname autocomplete with fuzzy matching from `Devices` tab plus historical sheet entries. | Typing `"tomang"` suggests `SW1_KCP JAKARTA TOMANG`. Unknown hostnames show a "new device" notice and can be saved normally. |
+| **FR-08** | P1 | Hostname autocomplete with fuzzy matching from `Devices` tab plus historical sheet entries. | Typing `"branch"` suggests `SW1_BRANCH_A`. Unknown hostnames show a "new device" notice and can be saved normally. |
 | **FR-09** | P1 | Today's entries list read back from sheet with row count and total logged minutes. | Displayed list and sums match the rows in the sheet for today's date. |
 | **FR-10** | P1 | Undo last save within 30 seconds (only if row is unchanged). | Clicking Undo clears the row. If the row was manually edited in Google Sheets, Undo safely aborts and alerts user. |
 | **FR-11** | P1 | Offline queue with "Pending (n)" status indicator, auto-retry on reconnect/focus, duplicate prevention. | Trigger 3 saves while offline; reconnect: exactly 3 rows written with no duplicates. |

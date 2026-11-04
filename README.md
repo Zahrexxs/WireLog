@@ -1,13 +1,13 @@
 <div align="center">
 
-# ⚡ Daily Task Logger
+# ⚡ WireLog — Daily Task Logger
 
 **A high-velocity, mobile-first Google Apps Script web application built for Network Engineers to log daily operations in seconds with zero clock drift.**
 
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20(V8)-4285F4?logo=google-sheets&logoColor=white)](https://developers.google.com/apps-script)
 [![Frontend](https://img.shields.io/badge/Frontend-Vanilla%20HTML5%20%2F%20CSS3%20%2F%20ES6-E34F26?logo=html5&logoColor=white)](client/index.html)
 [![Bundle Size](https://img.shields.io/badge/Bundle%20Size-17.68%20KB%20(gzipped)-success?logo=webpack&logoColor=white)](#performance--footprint)
-[![Test Suite](https://img.shields.io/badge/Tests-21%2F21%20Passing-brightgreen?logo=jest&logoColor=white)](tests/unitTests.js)
+[![Test Suite](https://img.shields.io/badge/Tests-24%2F24%20Passing-brightgreen?logo=jest&logoColor=white)](tests/unitTests.js)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20Native)-blueviolet)](#architecture--fixed-stack)
 
@@ -42,7 +42,7 @@ flowchart LR
 | **Repository URL** | [`https://github.com/Zahrexxs/WireLog`](https://github.com/Zahrexxs/WireLog) |
 | **Owner / Maintainer** | **[@Zahrexxs](https://github.com/Zahrexxs)** |
 | **Default Branch** | `main` |
-| **Repository Visibility** | `Private` |
+| **Repository Visibility** | `Public` |
 | **Runtime & Engines** | Google Apps Script (V8 Engine) • Node.js (v18+) for testing |
 | **Frontend Framework** | Plain Vanilla HTML5, Modern CSS3, ES6 Modules (Zero dependencies) |
 | **Production Bundle** | **17.92 KB** gzipped standalone bundle (`client/index.html`) |
@@ -78,8 +78,8 @@ Run Daily Task Logger on your own local server, Raspberry Pi, home lab, or VPS u
 ### Quick Run with Docker Compose
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Zahrexxs/daily-task-logger.git
-cd daily-task-logger
+git clone https://github.com/Zahrexxs/WireLog.git
+cd WireLog
 
 # 2. (Optional) Configure environment
 cp .env.example .env
@@ -93,15 +93,15 @@ Open **`http://localhost:3000`** (or your server's local IP address like `http:/
 ### Run with Docker CLI
 ```bash
 # Build the image
-docker build -t daily-task-logger .
+docker build -t wirelog .
 
 # Run with persistent data volume
 docker run -d \
-  --name daily-task-logger \
+  --name wirelog \
   -p 3000:3000 \
   -v $(pwd)/data:/app/data \
   --restart unless-stopped \
-  daily-task-logger
+  wirelog
 ```
 
 ---
@@ -170,7 +170,7 @@ DEFAULT_TIMEZONE=Asia/Jakarta
     <td width="50%">
       <h3>🔍 Smart Inventory Autocomplete</h3>
       <ul>
-        <li><b>Fuzzy Hostname Search</b>: Typing <code>"tomang"</code> matches <code>SW1_KCP JAKARTA TOMANG</code> from the <code>Devices</code> inventory tab and historical entries.</li>
+        <li><b>Fuzzy Hostname Search</b>: Typing <code>"branch"</code> matches <code>SW1_BRANCH_A</code> from the <code>Devices</code> inventory tab and historical entries.</li>
         <li><b>Keyboard Navigable</b>: Full <code>ArrowDown</code>, <code>ArrowUp</code>, and <code>Enter</code> selection.</li>
         <li><b>Uncatalogued Notice</b>: Displays a <code>New device</code> badge for uncatalogued hardware while allowing submission.</li>
         <li><b>CSV Device Importer</b>: Built-in settings utility to upload or paste hardware lists and deduplicate by uppercase hostname.</li>
@@ -207,7 +207,7 @@ The backend dynamically locates columns by matching header text (never hardcoded
 ## 📁 Repository Structure
 
 ```
-daily-task-logger/
+WireLog/
 ├── .clasp.json              # Clasp project configuration
 ├── .claspignore            # Excludes dev files from Apps Script push
 ├── appsscript.json          # Apps Script V8 runtime manifest (Asia/Jakarta)
@@ -247,7 +247,7 @@ daily-task-logger/
 
 You can preview the app and run all unit tests locally without deploying to Google:
 
-### 1. Run Unit Tests (21 Test Scenarios)
+### 1. Run Unit Tests (24 Test Scenarios)
 ```bash
 npm test
 # Or: node tests/unitTests.js
@@ -312,6 +312,18 @@ In the Apps Script editor (**Project Settings** > **Script Properties**):
 5. Open the URL on your mobile browser, tap **Share** > **Add to Home Screen** to install it as an app icon!
 
 </details>
+
+---
+
+## 🔐 Security Notes
+
+- The Node server has **no authentication**. Run it on a trusted LAN, your own
+  machine, or behind a reverse proxy with auth. Do not expose port `3000`
+  directly to the internet.
+- `SPREADSHEET_WEBAPP_URL` is stored in `data/settings.json` on the server. The
+  `data/` directory is git-ignored and should never be committed.
+- The Apps Script deployment in this guide uses `Execute as: Me` and
+  `Who has access: Only myself`. Change that deliberately if you need wider access.
 
 ---
 

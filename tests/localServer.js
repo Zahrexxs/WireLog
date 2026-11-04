@@ -40,7 +40,7 @@ const sampleRow = [
   'SUPPORT',
   'KANTOR CABANG',
   'Minor',
-  'SW1_AREA JAMBI',
+  'SW2_BRANCH_B',
   'CLOSED',
   'Desktop',
   TimeUtils.timeToFraction('9:11:00 AM'),
@@ -53,8 +53,8 @@ taskSheet.getRange(2, 1, 1, sampleRow.length).setValues([sampleRow]);
 // Seed devices tab
 devSheet.getRange(1, 1, 1, 3).setValues([['Hostname', 'Site', 'Project Category']]);
 devSheet.getRange(2, 1, 3, 3).setValues([
-  ['SW1_KCP JAKARTA TOMANG', 'Jakarta', 'KANTOR CABANG'],
-  ['SW1_AREA JAMBI', 'Jambi', 'KANTOR CABANG'],
+  ['SW1_BRANCH_A', 'Site A', 'KANTOR CABANG'],
+  ['SW2_BRANCH_B', 'Site B', 'KANTOR CABANG'],
   ['ROUTER_CORE_HQ', 'Pusat', 'HEAD OFFICE']
 ]);
 
@@ -91,7 +91,7 @@ function handleApi(endpoint, body, res) {
         formattedDate: TimeUtils.formatDateForInput(now, 'Asia/Jakarta')
       };
     } else if (endpoint === '/api/getConfig') {
-      const devices = ['SW1_KCP JAKARTA TOMANG', 'SW1_AREA JAMBI', 'ROUTER_CORE_HQ'];
+      const devices = ['SW1_BRANCH_A', 'SW2_BRANCH_B', 'ROUTER_CORE_HQ'];
       responseData = {
         success: true,
         colMap: colMap,
