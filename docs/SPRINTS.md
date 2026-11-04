@@ -102,7 +102,7 @@
 
 - [x] **S3-3: Hostname Autocomplete & Fuzzy Search (2.5h)**
   - *Description*: Fast client-side fuzzy search querying `Devices` inventory tab merged with distinct hostnames from the task log sheet. Cached for 6 hours in localStorage. Displays "New device" badge for unregistered hostnames.
-  - *Acceptance Criteria*: Typing `"tomang"` matches `SW1_KCP JAKARTA TOMANG`; unknown hostname displays warning but allows saving.
+  - *Acceptance Criteria*: Typing `"branch"` matches `SW1_BRANCH_A`; unknown hostname displays warning but allows saving.
 
 - [x] **S3-4: Today's Entries Feed & Metrics (1.5h)**
   - *Description*: Slide-up or expandable list reading today's logged entries from sheet with total count and cumulative minutes logged.

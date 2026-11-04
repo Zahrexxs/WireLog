@@ -70,8 +70,8 @@
   - *Action*: Save an entry.
   - *Expected*: Category, Project Category, Severity, Status, Request by, and Engineer stay selected; Hostname and Remark are blanked.
 - [x] **TC-18: Hostname Fuzzy Autocomplete & New Device Notice (FR-08 & S3-3)**
-  - *Action*: Type `"tomang"` in Hostname.
-  - *Expected*: Suggests `SW1_KCP JAKARTA TOMANG`. Type an unknown device -> displays `New device` warning but allows save.
+  - *Action*: Type `"branch"` in Hostname.
+  - *Expected*: Suggests `SW1_BRANCH_A`. Type an unknown device -> displays `New device` warning but allows save.
 - [x] **TC-19: 30-Second Undo Window (FR-10 & S3-5)**
   - *Action*: Save entry; click "Undo" within 30 seconds.
   - *Expected*: Row content is cleared from the sheet; form inputs are restored. If row was manually edited in Google Sheet, Undo is safely refused.

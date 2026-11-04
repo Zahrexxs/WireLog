@@ -7,6 +7,9 @@ node_modules/
 # Clasp auth token (NEVER commit credentials)
 .clasprc.json
 
+# Local runtime data (tasks, settings, devices)
+data/
+
 # OS files
 .DS_Store
 Thumbs.db

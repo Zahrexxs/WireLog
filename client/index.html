@@ -1086,7 +1086,7 @@ body.dark-mode .status-banner {
                 <span class="new-device-badge" id="newDeviceNotice" style="display:none">New device</span>
               </label>
               <div class="combobox-wrapper">
-                <input type="text" id="inputHostname" class="form-input combobox-input" placeholder="e.g. SW1_KCP JAKARTA TOMANG" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
+                <input type="text" id="inputHostname" class="form-input combobox-input" placeholder="e.g. SW1_BRANCH_A" required autocomplete="off" aria-autocomplete="list" aria-controls="hostnameList">
                 <button type="button" class="combobox-toggle" id="btnToggleHostname" title="Show device options" aria-label="Toggle device suggestions" tabindex="-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
@@ -1358,7 +1358,7 @@ body.dark-mode .status-banner {
           </div>
 
           <div class="form-group">
-            <textarea id="csvTextarea" class="form-textarea" placeholder="Hostname, Site, Project Category&#10;SW1_KCP JAKARTA TOMANG, Jakarta, KANTOR CABANG" style="font-family:monospace;font-size:0.78rem;"></textarea>
+            <textarea id="csvTextarea" class="form-textarea" placeholder="Hostname, Site, Project Category&#10;SW1_BRANCH_A, Jakarta, KANTOR CABANG" style="font-family:monospace;font-size:0.78rem;"></textarea>
           </div>
 
           <button type="button" id="btnImportCsv" class="btn-save" style="height:36px;font-size:0.88rem;background:var(--accent);">
@@ -1749,7 +1749,7 @@ body.dark-mode .status-banner {
 /**
  * Daily Task Logger — Hostname Autocomplete & Fuzzy Matching
  * Matches user input against cached device inventory and past entries.
- * e.g., typing "tomang" matches "SW1_KCP JAKARTA TOMANG"
+ * e.g., typing "branch" matches "SW1_BRANCH_A"
  */
 
 (function(root, factory) {
